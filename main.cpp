@@ -1,4 +1,6 @@
 #include <iostream>
+import CPPN.Core;
 int main() {
-    std::cout << "hello, world! its a me" << std::endl;
+    CPPN::CorePublic::EngineSettings mainSettings;
+    CPPN::CorePublic::InitEngine(mainSettings);
 }
