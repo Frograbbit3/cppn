@@ -25,7 +25,5 @@ namespace CPPN {
                 SDL_Delay(16);
             }
         }
-
-
     }
 }

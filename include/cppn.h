@@ -3,5 +3,6 @@
 #include "graphics_general.hpp"
 #include "graphics_core.hpp"
 #include "input_core.hpp"
+#include "graphics_shapes.hpp"
 #pragma once
 

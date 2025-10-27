@@ -14,6 +14,11 @@ namespace CPPN {
         std::vector<CPPN::Graphics::BaseShape*> shapes;
         bool running = true;
         bool WindowInit = false;
+        // Variables to track dragging state
+        BaseShape* draggedShape = nullptr;
+        int dragOffsetX = 0;
+        int dragOffsetY = 0;
+
         void CreateWindow(int width, int height, std::string title) {
             if (SDL_Init(SDL_INIT_VIDEO) != 0) {
                 std::cout << "Error initing SDL" << std::endl;
@@ -51,15 +56,24 @@ namespace CPPN {
 
             for (CPPN::Graphics::BaseShape* shape : shapes) {
                 if (!shape) continue;
-                //process dragging
-                if (shape->draggable && CPPN::Input::leftMouseDown) {
-                    if (shape->isColliding(CPPN::Input::mouseX,CPPN::Input::mouseY)) {
-                        shape->setPosition(CPPN::Input::mouseX, CPPN::Input::mouseY);
+
+                // Process dragging
+                if (CPPN::Input::leftMouseDown) {
+                    if (!draggedShape && shape->draggable && shape->isColliding(CPPN::Input::mouseX, CPPN::Input::mouseY)) {
+                        draggedShape = shape;
+                        dragOffsetX = CPPN::Input::mouseX - shape->x;
+                        dragOffsetY = CPPN::Input::mouseY - shape->y;
                     }
+                    if (draggedShape == shape) {
+                        shape->setPosition(CPPN::Input::mouseX - dragOffsetX, CPPN::Input::mouseY - dragOffsetY);
+                    }
+                } else {
+                    draggedShape = nullptr; // Reset dragging state when the mouse button is released
                 }
+
                 auto col = shape->getColor();
                 SDL_SetRenderDrawColor(renderer, col.red, col.green, col.blue, col.alpha);
-                
+
                 shape->update();
                 if (renderer) shape->draw(renderer);
             }

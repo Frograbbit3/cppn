@@ -30,38 +30,6 @@ namespace CPPN
 
         };
 
-        class Rectangle : public BaseShape
-        {
-        private:
-            SDL_Rect rect;
-
-        public:
-            int width;
-            int height;
-            Rectangle(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {255, 255, 255, 255})
-                : BaseShape(x, y, color), width(wid), height(hei)
-            {
-                rect.x = this->x;
-                rect.y = this->y;
-                rect.w = width;
-                rect.h = height;
-            }
-
-            virtual void update() override
-            {
-                rect.x = static_cast<int>(x);
-                rect.y = static_cast<int>(y);
-                rect.w = width;
-                rect.h = height;
-            }
-            void draw(SDL_Renderer *ren) const override
-            {
-                SDL_RenderFillRect(ren, &rect);
-            }
-            bool isColliding(int x, int y) const override {
-                return (rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h);
-            }
-        };
-    } // namespace Graphics
+       } // namespace Graphics
 
 }
