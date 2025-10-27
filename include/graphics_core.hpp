@@ -3,6 +3,9 @@
 #include <iostream>
 #include <vector>
 #include "graphics_general.hpp"
+#include "input_core.hpp"
+#include "macros.hpp"
+#include "core.hpp"
 namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
@@ -62,6 +65,20 @@ namespace CPPN {
             while (SDL_PollEvent(&e)) {
                 if (e.type == SDL_QUIT) {
                     running = false;
+                }
+                if (e.type == SDL_MOUSEBUTTONDOWN) {
+                    CPPN::Input::leftMouseDown = true;
+                }
+                if (e.type == SDL_MOUSEBUTTONUP) {
+                    CPPN::Input::leftMouseDown = false;
+                }
+                if (e.type == SDL_MOUSEMOTION && CPPN::Input::leftMouseDown) {
+                    CPPN::Input::MoveMouse(e.motion.x, e.motion.y);
+                    CPPN::Core::CallMacro("mousedrag");
+                }
+                if (e.type == SDL_MOUSEMOTION) {
+                    CPPN::Input::MoveMouse(e.motion.x, e.motion.y);
+                    CPPN::Core::CallMacro("mousemove");
                 }
             }
         

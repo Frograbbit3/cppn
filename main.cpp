@@ -11,9 +11,11 @@ int main() {
     Graphics::Color red(255,0,0,255);
     Graphics::Rectangle testRect(20, 20, 50, 50, red);
 
-    Core::AssignMacro("tick", [&testRect]() {
-        testRect.setPosition(testRect.x + 5, testRect.y);
+    Core::AssignMacro("mousedrag", [&testRect]() {
+        testRect.setPosition(CPPN::Input::mouseX, CPPN::Input::mouseY);
     });
+
+    
 
     Core::Run();
 }
