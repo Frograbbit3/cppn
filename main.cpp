@@ -1,6 +1,4 @@
 #include <iostream>
-import CPPN.Core;
+#include "cppn.h"
 int main() {
-    CPPN::CorePublic::EngineSettings mainSettings;
-    CPPN::CorePublic::InitEngine(mainSettings);
 }
