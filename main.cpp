@@ -3,17 +3,18 @@
 using namespace CPPN;
 
 
-void onTick() {
-    std::cout << "hello, world!" << std::endl;
-}
 
 int main() {
     Core::Init(800,600,"men");
 
     //create core functions
-    std::function<void()> tick = onTick;
-    Core::AssignMacro("tick", tick);
+    Graphics::Color red(255,0,0,255);
+    Graphics::Rectangle testRect(20, 20, 50, 50, red);
 
-    //run
+    Core::AssignMacro("tick", [&testRect]() {
+        testRect.setPosition(testRect.x + 5, testRect.y);
+    });
+
     Core::Run();
 }
+
