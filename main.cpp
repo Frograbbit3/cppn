@@ -10,10 +10,10 @@ int main() {
     //create core functions
     Graphics::Color red(255,0,0,255);
     Graphics::Rectangle testRect(20, 20, 50, 50, red);
-
-    Core::AssignMacro("mousedrag", [&testRect]() {
-        testRect.setPosition(CPPN::Input::mouseX, CPPN::Input::mouseY);
-    });
+    testRect.draggable = true;
+ //   Core::AssignMacro("mousedrag", [&testRect]() {
+    //    testRect.setPosition(CPPN::Input::mouseX, CPPN::Input::mouseY);
+    //});
 
     
 

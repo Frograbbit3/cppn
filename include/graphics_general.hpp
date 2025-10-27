@@ -1,14 +1,7 @@
 #pragma once
 #include "SDL2/SDL.h"
 #include "graphics_utils.hpp"
-
-// forward-declare AddShape so BaseShape can auto-register without including
-// graphics_core.hpp (avoid circular include). The function is defined in
-// graphics_core.hpp and takes ownership/management there.
 namespace CPPN { namespace Graphics { void AddShape(class BaseShape*); } }
-
-// Forward-declare AddShape so BaseShape can auto-register itself without
-// including graphics_core.hpp (avoids circular include).
 namespace CPPN { namespace Graphics { class BaseShape; void AddShape(BaseShape*); } }
 namespace CPPN
 {
@@ -26,12 +19,14 @@ namespace CPPN
 
         public:
             int x, y;
+            bool draggable = false;
             virtual ~BaseShape() = default;
             const Color &getColor() const noexcept { return color; }
             void setColor(const Color &c) noexcept { color = c; }
             void setPosition(const int &xpos, const int &ypos) {x=xpos;y=ypos;}
             virtual void draw(SDL_Renderer *ren) const = 0;
             virtual void update() {}
+            virtual bool isColliding(int x, int y) const {return false;}
 
         };
 
@@ -62,6 +57,9 @@ namespace CPPN
             void draw(SDL_Renderer *ren) const override
             {
                 SDL_RenderFillRect(ren, &rect);
+            }
+            bool isColliding(int x, int y) const override {
+                return (rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h);
             }
         };
     } // namespace Graphics

@@ -51,7 +51,12 @@ namespace CPPN {
 
             for (CPPN::Graphics::BaseShape* shape : shapes) {
                 if (!shape) continue;
-                // set draw color from the shape's color (use components, SDL expects 4 uint8_t args)
+                //process dragging
+                if (shape->draggable && CPPN::Input::leftMouseDown) {
+                    if (shape->isColliding(CPPN::Input::mouseX,CPPN::Input::mouseY)) {
+                        shape->setPosition(CPPN::Input::mouseX, CPPN::Input::mouseY);
+                    }
+                }
                 auto col = shape->getColor();
                 SDL_SetRenderDrawColor(renderer, col.red, col.green, col.blue, col.alpha);
                 
