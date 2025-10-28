@@ -1,5 +1,8 @@
 #include <iostream>
-#include "cppn.h"
+#include "include/cppn.h"
+#include "include/graphics/graphics_shapes.hpp"
+#include "include/graphics/graphics_svg.hpp"
+#include "include/graphics/graphics_utils.hpp"
 using namespace CPPN;
 #include <sys/resource.h>
 
@@ -15,26 +18,26 @@ void printMemoryUsage() {
 
 int main() {
     Core::Init(800,600,"men");
+
     Graphics::RectangleProperties prop2;
-    prop2.fill = Graphics::Color(255,0,0,255);
-    prop2.strokeWidth = 25;
-    Graphics::Rectangle mainPlayer(20, 20, prop2);
-    Graphics::OvalProperties prop;
-    prop.width = 50;
-    prop.height = 25;
-    Graphics::Oval player2(40, 40, prop);
-    Graphics::Image exampleImage("/home/nateb/Desktop/cppn/assets/file.png",0,0,64,64);
-    exampleImage.draggable = true;
-    mainPlayer.draggable = true;
-    player2.draggable = true;
+    prop2.setCornerRadius(5)
+    .setStrokeWidth(15)
+    .setStroke(Color(255,0,255,255));
+    Graphics::Rectangle rect(50,50,150, 150,prop2);
+
+    Graphics::OvalProperties prop1;
+    prop1.setFill(Color(128,65,255,255))
+    .setStroke(Color(195,255,15,255))
+    .setStrokeWidth(15)
+    .setSize(75, 150);
+    Graphics::Oval oval1(250,50,prop1);
+
+    rect.draggable=true;
+    oval1.draggable=true;
+
 
     //create core functions
     
-    Core::AssignMacro("tick", [&exampleImage,&mainPlayer, &player2]() {
-        exampleImage.rotation += 1.0f;
-        mainPlayer.rotation += 1.0f;
-       // player2.rotation -= 2.5f;
-    });
     
 
     Core::Run();

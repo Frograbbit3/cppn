@@ -10,3 +10,5 @@
 
 
 
+//macros
+using Color = CPPN::Graphics::Color;

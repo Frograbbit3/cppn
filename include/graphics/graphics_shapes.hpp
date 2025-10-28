@@ -15,9 +15,12 @@ namespace CPPN
             CPPN::Graphics::RectangleProperties properties;
 
         public:
-            Rectangle(int x, int y, CPPN::Graphics::RectangleProperties settings)
-                : BaseShape(x, y, properties.fill), properties(settings)
+            Rectangle(int x, int y, int width, int height, CPPN::Graphics::RectangleProperties settings)
+                : BaseShape(x, y, settings.fill), properties(settings)
             {
+                properties.width = width;
+                properties.height = height;
+                std::cout << properties.generateSVG() <<std::endl;
                 texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 
@@ -33,9 +36,10 @@ namespace CPPN
             {
                 SDL_RenderCopyEx(ren, texture, nullptr, &rect, rotation, nullptr, SDL_FLIP_NONE);
             }
-            bool isColliding(int tx, int ty) const override
+            bool isColliding(int px, int py) const override
             {
-                return (tx <= x && x <= tx + properties.width) && (ty <= y && y <= ty + properties.height);
+                return (px >= x && px <= x + properties.width) &&
+                    (py >= y && py <= y + properties.height);
             }
         };
         class Oval : public BaseShape

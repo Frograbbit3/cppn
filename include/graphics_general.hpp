@@ -1,5 +1,6 @@
 #pragma once
 #include "SDL2/SDL.h"
+#include "graphics/graphics_utils.hpp"
 #include "graphics_utils.hpp"
 namespace CPPN { namespace Graphics { void AddShape(class BaseShape*); } }
 namespace CPPN { namespace Graphics { class BaseShape; void AddShape(BaseShape*); } }
