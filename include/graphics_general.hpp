@@ -12,7 +12,7 @@ namespace CPPN
         {
         protected:
             CPPN::Graphics::Color color;
-            BaseShape(int x = 0, int y = 0, CPPN::Graphics::Color color = {255, 255, 255, 255})
+            BaseShape(int x = 0, int y = 0, CPPN::Graphics::Color color = {0,0,0, 255})
                 : x(x), y(y), color(color) {
                 CPPN::Graphics::AddShape(this);
             }

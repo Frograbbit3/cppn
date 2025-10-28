@@ -11,7 +11,7 @@ namespace CPPN
         public:
             int width;
             int height;
-            Rectangle(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {255, 255, 255, 255})
+            Rectangle(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {0,0,0, 255})
                 : BaseShape(x, y, color), width(wid), height(hei)
             {
                 rect.x = this->x;
@@ -41,7 +41,7 @@ namespace CPPN
             int width;
             int height;
 
-            Oval(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {255, 255, 255, 255})
+            Oval(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {0,0,0, 255})
                 : BaseShape(x, y, color), width(wid), height(hei) {}
 
             virtual void update() override {
