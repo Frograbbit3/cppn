@@ -19,7 +19,6 @@ namespace CPPN
 
         public:
             int x, y;
-            double rotation=0;
             bool draggable = false;
             virtual ~BaseShape() = default;
             const Color &getColor() const noexcept { return color; }

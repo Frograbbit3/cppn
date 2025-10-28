@@ -4,7 +4,7 @@
 
 CXX ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -Iinclude
-LDFLAGS ?= -lSDL2 -lSDL2main -lSDL2_image
+LDFLAGS ?= -lSDL2 -lSDL2main -lSDL2_image -lfmt
 OUT_DIR := bin
 SRC := main.cpp
 
@@ -16,7 +16,7 @@ main:
 	@rm -rf bin
 	@mkdir -p $(OUT_DIR)
 	@cp -r assets/* $(OUT_DIR)/ 2>/dev/null || true
-	@$(CXX) $(SRC) -o $(OUT_DIR)/main.o $(CXXFLAGS) -fmodules-ts $(LDFLAGS)
+	@$(CXX) $(SRC) -o $(OUT_DIR)/main.o $(CXXFLAGS) -fmodules-ts $(LDFLAGS) 
 	@chmod +x $(OUT_DIR)/main.o
 	@echo "✅ Built native binary -> $(OUT_DIR)/main.o"
 

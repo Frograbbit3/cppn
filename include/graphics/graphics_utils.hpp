@@ -15,5 +15,11 @@ namespace CPPN {
                 return SDL_MapRGBA(fmt, red, green, blue, alpha);
             }
         };
+        SDL_Texture *LoadSVG(std::string svgData, SDL_Renderer *ren) {
+            SDL_RWops *rw = SDL_RWFromConstMem(svgData.c_str(), svgData.size());
+            SDL_Surface *surface = IMG_Load_RW(rw, 1);
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
+            return texture;
+        }
     }
 }

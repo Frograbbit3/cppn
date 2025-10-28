@@ -46,7 +46,7 @@ namespace CPPN
             {
                 if (!texture) return;
                 SDL_Rect dst{ x, y, width, height };
-                SDL_RenderCopy(ren, texture, nullptr, &dst);
+                SDL_RenderCopyEx(ren, texture, nullptr, &dst, rotation, nullptr, SDL_FLIP_NONE);
             }
 
             bool isColliding(int px, int py) const override

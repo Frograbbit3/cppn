@@ -1,77 +1,83 @@
 #pragma once
 #include "graphics_general.hpp"
+#include "graphics_core.hpp"
+#include "graphics_svg.hpp"
+#include "graphics_utils.hpp"
 namespace CPPN
 {
-    namespace Graphics {
+    namespace Graphics
+    {
         class Rectangle : public BaseShape
         {
         private:
             SDL_Rect rect;
+            SDL_Texture *texture;
+            CPPN::Graphics::RectangleProperties properties;
 
         public:
-            int width;
-            int height;
-            Rectangle(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {0,0,0, 255})
-                : BaseShape(x, y, color), width(wid), height(hei)
+            Rectangle(int x, int y, CPPN::Graphics::RectangleProperties settings)
+                : BaseShape(x, y, properties.fill), properties(settings)
             {
-                rect.x = this->x;
-                rect.y = this->y;
-                rect.w = width;
-                rect.h = height;
+                texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 
             virtual void update() override
             {
-                rect.x = static_cast<int>(x);
-                rect.y = static_cast<int>(y);
-                rect.w = width;
-                rect.h = height;
+                rect.x = x;
+                rect.y = y;
+                rect.w = properties.width;
+                rect.h = properties.height;
+                //texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
             void draw(SDL_Renderer *ren) const override
             {
-                SDL_RenderFillRect(ren, &rect);
+                SDL_RenderCopyEx(ren, texture, nullptr, &rect, rotation, nullptr, SDL_FLIP_NONE);
             }
-            bool isColliding(int x, int y) const override {
-                return (rect.x <= x && x <= rect.x + rect.w) && (rect.y <= y && y <= rect.y + rect.h);
+            bool isColliding(int tx, int ty) const override
+            {
+                return (tx <= x && x <= tx + properties.width) && (ty <= y && y <= ty + properties.height);
             }
         };
         class Oval : public BaseShape
         {
+        private:
+            SDL_Texture *texture;
+            SDL_Rect rect;
+
         public:
-            int width;
-            int height;
+            CPPN::Graphics::OvalProperties properties;
+            Oval(int x, int y, CPPN::Graphics::OvalProperties settings)
+                : BaseShape(x, y, properties.fill), properties(settings)
+            {
+               // texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                update();
 
-            Oval(int x, int y, int wid, int hei, CPPN::Graphics::Color color = {0,0,0, 255})
-                : BaseShape(x, y, color), width(wid), height(hei) {}
-
-            virtual void update() override {
-                // No need for a rect; use width and height directly
+                texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 
-            void draw(SDL_Renderer *ren) const override {
-                int x_c = x; // Center x
-                int y_c = y; // Center y
-                int a = width / 2; // Horizontal radius
-                int b = height / 2; // Vertical radius
+            virtual void update() override
+            {
+                rect.x = x;
+                rect.y = y;
+                rect.h = properties.height;
+                rect.w = properties.width;
+            }
 
-                for (int dy = -b; dy <= b; ++dy) {
-                    int dx = static_cast<int>(a * sqrt(1.0 - (dy * dy) / static_cast<double>(b * b)));
-                    SDL_RenderDrawLine(ren, x_c - dx, y_c + dy, x_c + dx, y_c + dy);
-                }
+            void draw(SDL_Renderer *ren) const override
+            {
+                SDL_RenderCopyEx(ren, texture, nullptr, &rect, rotation, nullptr, SDL_FLIP_NONE);
             }
 
             bool isColliding(int px, int py) const override {
-                int x_c = x; // Center x
-                int y_c = y; // Center y
-                int a = width / 2; // Horizontal radius
-                int b = height / 2; // Vertical radius
-
-                // Check if the point satisfies the ellipse equation
-                double dx = static_cast<double>(px - x_c) / a;
-                double dy = static_cast<double>(py - y_c) / b;
-                return (dx * dx + dy * dy) <= 1.0;
+                int cx = rect.x + rect.w / 2;
+                int cy = rect.y + rect.h / 2;
+                int a = rect.w / 2;
+                int b = rect.h / 2;
+                double dx = (px - cx) / double(a);
+                double dy = (py - cy) / double(b);
+                return dx*dx + dy*dy <= 1.0;
             }
         };
- 
+
     }
 } // namespace CPPN
