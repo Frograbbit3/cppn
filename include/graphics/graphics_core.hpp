@@ -4,9 +4,9 @@
 #include <iostream>
 #include <vector>
 #include "graphics_general.hpp"
-#include "input_core.hpp"
-#include "macros.hpp"
-#include "core.hpp"
+#include "../core/input_core.hpp"
+#include "../core/macros.hpp"
+#include "../core/core.hpp"
 namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
@@ -37,7 +37,8 @@ namespace CPPN {
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             }
             WindowInit = true;
-            // initialize SDL_image (support PNG/JPG)
+
+            // initialize SDL_image for common formats (PNG, JPG)
             int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
             if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
                 std::cerr << "IMG_Init failed: " << IMG_GetError() << std::endl;
@@ -47,10 +48,22 @@ namespace CPPN {
             if (WindowInit) {
                 SDL_DestroyWindow(window);
                 SDL_DestroyRenderer(renderer);
-                // shutdown SDL_image then SDL
+                // quit SDL_image first
                 IMG_Quit();
                 SDL_Quit();
             }
+        }
+
+        SDL_Texture* LoadImage(const std::string &img) {
+            if (!WindowInit || renderer==nullptr) {
+                std::cerr << "LoadImage: Renderer/window not initialized" << std::endl;
+                return nullptr;
+            }
+            SDL_Texture* tex = IMG_LoadTexture(renderer, img.c_str());
+            if (!tex) {
+                std::cerr << "IMG_LoadTexture failed for '" << img << "': " << IMG_GetError() << std::endl;
+            }
+            return tex;
         }
         void AddShape(CPPN::Graphics::BaseShape* shape) {
             shapes.emplace_back(shape);
