@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL2/SDL_image.h"
 #include "graphics_general.hpp"
+#include "../filesystem/filesystem_core.hpp"
 #include "graphics_core.hpp"
 #include <string>
 #include <iostream>
@@ -21,7 +22,7 @@ namespace CPPN
             Image(const std::string &path, int x, int y, int wid = 0, int hei = 0)
                 : BaseShape(x, y), texture(nullptr), width(wid), height(hei)
             {
-                texture = CPPN::Graphics::LoadImage(path);
+                texture = CPPN::Graphics::LoadImage(FileSystem::OpenFileAsText(path));
                 if (!texture) {
                     std::cerr << "Image: failed to load texture for '" << path << "'\n";
                     return;

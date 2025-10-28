@@ -1,5 +1,7 @@
 #include <iostream>
+#include "include/core/macros.hpp"
 #include "include/cppn.h"
+#include "include/filesystem/filesystem_core.hpp"
 #include "include/graphics/graphics_shapes.hpp"
 #include "include/graphics/graphics_svg.hpp"
 #include "include/graphics/graphics_utils.hpp"
@@ -18,27 +20,24 @@ void printMemoryUsage() {
 
 int main() {
     Core::Init(800,600,"men");
-
-    Graphics::RectangleProperties prop2;
-    prop2.setCornerRadius(5)
-    .setStrokeWidth(15)
-    .setStroke(Color(255,0,255,255));
-    Graphics::Rectangle rect(50,50,150, 150,prop2);
-
-    Graphics::OvalProperties prop1;
-    prop1.setFill(Color(128,65,255,255))
-    .setStroke(Color(195,255,15,255))
-    .setStrokeWidth(15)
-    .setSize(75, 150);
-    Graphics::Oval oval1(250,50,prop1);
-
-    rect.draggable=true;
-    oval1.draggable=true;
+    FileSystem::Init("Example Company", "Example Name");
 
 
-    //create core functions
-    
-    
+    std::cout << FileSystem::SAVE_PATH << std::endl;
+    std::cout << FileSystem::RESOURCE_PATH << std::endl;
+    std::cout << FileSystem::OpenFileAsText("test.txt") << std::endl;
+
+
+    Graphics::RectangleProperties rectp;
+    rectp
+    .setFill(Color(255,0,0,255))
+    .setSize(50, 50);
+    Graphics::Rectangle r(50, 50, 50, 50, rectp);
+    r.draggable = true;
+
+    Core::AssignMacro("tick", []() {
+        std::cout << "hi world" <<std::endl;
+    });
 
     Core::Run();
 }

@@ -39,7 +39,7 @@ namespace CPPN {
             WindowInit = true;
 
             // initialize SDL_image for common formats (PNG, JPG)
-            int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
+            int imgFlags = IMG_INIT_PNG;
             if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
                 std::cerr << "IMG_Init failed: " << IMG_GetError() << std::endl;
             }
