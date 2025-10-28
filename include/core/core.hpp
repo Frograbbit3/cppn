@@ -6,26 +6,61 @@
 #include <functional>
 #include <any>
 
-namespace CPPN {
-    namespace Core {
-        // Store macros as callable objects with a unified void() signature.
-        bool paused = false;
-        bool init=false;
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
-        void Init(int width, int height, std::string title) {
+namespace CPPN
+{
+    namespace Core
+    {
+
+        bool paused = false;
+        bool init = false;
+
+        void Init(int width, int height, std::string title)
+        {
             CPPN::Graphics::CreateWindow(width, height, title);
-            init=true;
+            init = true;
         }
-        void Run() {
-            while (true) {
-                if (CPPN::Graphics::TickWindow() == false){
-                    break;
-                }
-                if (!paused) {
-                    CallMacro("tick");
-                }
-                SDL_Delay(16);
+
+        bool Tick()
+        {
+            if (CPPN::Graphics::TickWindow() == false)
+            {
+#ifdef __EMSCRIPTEN__
+                emscripten_cancel_main_loop();
+#else
+                return false;
+#endif
             }
+
+            if (!paused)
+            {
+                CallMacro("tick");
+            }
+
+#ifndef __EMSCRIPTEN__
+            SDL_Delay(16); // only delay in native builds
+#endif
+            return true;
         }
-    }
-}
+
+#ifdef __EMSCRIPTEN__
+        // Wrapper to satisfy emscripten_set_main_loop’s void() signature
+        void TickWrapper() { Tick(); }
+#endif
+
+        void Run()
+        {
+#ifdef __EMSCRIPTEN__
+            emscripten_set_main_loop(TickWrapper, 0, 1);
+#else
+            while (Tick())
+            { /* keep going until TickWindow() returns false */
+            }
+#endif
+        }
+
+    } // namespace Core
+} // namespace CPPN

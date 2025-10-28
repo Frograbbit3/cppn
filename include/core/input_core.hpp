@@ -16,7 +16,7 @@ namespace CPPN {
             keysPressed.insert(key);
         }
         void KeyUp(std::string &key) {
-            if (keysPressed.contains(key)) {
+            if (keysPressed.find(key) != keysPressed.end()) {
                 keysPressed.erase(key);
             }
         } 

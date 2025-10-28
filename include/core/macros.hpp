@@ -9,7 +9,7 @@ namespace CPPN {
         // Assign a macro with any callable that is convertible to std::function<void()>.
         template<typename Fn>
         void AssignMacro(std::string macroName, Fn func) {
-            if (MACROS.contains(macroName)) {
+            if (MACROS.find(macroName) != MACROS.end()) {
                 return;
             }
             MACROS[macroName] = std::function<void()>(std::move(func));
