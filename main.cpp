@@ -2,6 +2,7 @@
 #include "include/core/macros.hpp"
 #include "include/cppn.h"
 #include "include/filesystem/filesystem_core.hpp"
+#include "include/graphics/graphics_images.hpp"
 #include "include/graphics/graphics_shapes.hpp"
 #include "include/graphics/graphics_svg.hpp"
 #include "include/graphics/graphics_utils.hpp"
@@ -23,11 +24,6 @@ int main() {
     FileSystem::Init("Example Company", "Example Name");
 
 
-    std::cout << FileSystem::SAVE_PATH << std::endl;
-    std::cout << FileSystem::RESOURCE_PATH << std::endl;
-    std::cout << FileSystem::OpenFileAsText("test.txt") << std::endl;
-
-
     Graphics::RectangleProperties rectp;
     rectp
     .setFill(Color(255,0,0,255))
@@ -35,9 +31,8 @@ int main() {
     Graphics::Rectangle r(50, 50, 50, 50, rectp);
     r.draggable = true;
 
-    Core::AssignMacro("tick", []() {
-        std::cout << "hi world" <<std::endl;
-    });
+    Graphics::Image m("file.png", 200, 200, 50, 50);
+    m.draggable=true;
 
     Core::Run();
 }

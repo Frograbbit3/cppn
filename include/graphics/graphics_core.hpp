@@ -71,7 +71,7 @@ namespace CPPN {
         void DrawShapes() {
             // clear to black
             if (renderer) {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
                 SDL_RenderClear(renderer);
             }
 

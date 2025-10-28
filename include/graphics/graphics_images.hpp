@@ -22,7 +22,7 @@ namespace CPPN
             Image(const std::string &path, int x, int y, int wid = 0, int hei = 0)
                 : BaseShape(x, y), texture(nullptr), width(wid), height(hei)
             {
-                texture = CPPN::Graphics::LoadImage(FileSystem::OpenFileAsText(path));
+                texture = CPPN::Graphics::LoadImage(FileSystem::AbsoluteResourcePath(path));
                 if (!texture) {
                     std::cerr << "Image: failed to load texture for '" << path << "'\n";
                     return;
