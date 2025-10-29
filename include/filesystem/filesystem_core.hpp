@@ -135,27 +135,32 @@ namespace CPPN {
                 SaveData() {
 
                 }
-                void set(const std::string& category, const std::string& key, std::any value) {
+                template <typename T>
+                void set(const std::string& category, const std::string& key, const T& value) {
                     auto& entries = data[category];
                     for (auto& [k, v] : entries) {
                         if (k == key) {
-                            v = std::move(value);  // overwrite existing value
+                            v = value;
                             return;
                         }
                     }
-                    // if not found, add new one
-                    entries.emplace_back(key, std::move(value));
+                    entries.emplace_back(key, value);
                 }
 
-                const std::any& get(const std::string& category, const std::string& key) const {
-                    auto catIt = data.find(category);
-                    if (catIt == data.end()) throw std::runtime_error("Category not found: " + category);
+                template <typename T>
+                T get(const std::string& category, const std::string& key, const T& defaultValue = T{}) const {
+                    auto it = data.find(category);
+                    if (it == data.end()) return defaultValue;
 
-                    for (const auto& [k, v] : catIt->second) {
-                        if (k == key) return v;
+                    for (const auto& [k, v] : it->second) {
+                        if (k == key) {
+                            if (v.type() == typeid(T))
+                                return std::any_cast<T>(v);
+                            else
+                                throw std::bad_any_cast();
+                        }
                     }
-
-                    throw std::runtime_error("Key not found: " + key);
+                    return defaultValue;
                 }
 
 

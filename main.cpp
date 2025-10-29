@@ -1,5 +1,6 @@
 #include <any>
 #include <iostream>
+#include <string>
 #include "include/core/input_core.hpp"
 #include "include/core/macros.hpp"
 #include "include/cppn.h"
@@ -24,22 +25,18 @@ int main() {
     r.setFill(Color(255,0,0)).setCornerRadius(15);
     Graphics::Rectangle rect (150, 250, 50, 250, r);
     Graphics::Rectangle rect2 (350, 250, 50, 250, r);
-    if (FileSystem::FileExists(FileSystem::AbsoluteSavesPath("file.txt"))) {
-        save=FileSystem::OpenSaveFile(FileSystem::AbsoluteSavesPath("file.txt"));
+    if (FileSystem::FileExists(FileSystem::AbsoluteSavesPath("file2.txt"))) {
+        save=FileSystem::OpenSaveFile(FileSystem::AbsoluteSavesPath("file2.txt"));
     }else{
         save.set("records", "highest", 0);
     }
+    std::cout << "started" << std::endl;
     Core::AssignMacro("mousedown", [&rect2, &rect, &save]() {
-        if (rect.isColliding(CPPN::Input::mouseX,CPPN::Input::mouseY)) {
-            save.set("records", 
-            "highest", 
-            std::any_cast<int>(save.get("records", "highest")) + 1
-        );
-            std::cout << std::any_cast<int>(save.get("records", "highest")) <<std::endl;
-        }else if (rect2.isColliding(CPPN::Input::mouseX, CPPN::Input::mouseY)) {
-            FileSystem::WriteSaveFile("file.txt", save);
-            std::cout <<"saved" <<std::endl;
-        }
+        FileSystem::WriteSaveFile("file2.txt", save);
+        std::cout << "saved" << std::endl;
+    });
+    Core::AssignMacro("mousemove", [&save]() {
+        save.set("mouse", std::to_string(Input::mouseX), std::to_string(Input::mouseY));
     });
     
 
