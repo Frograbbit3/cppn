@@ -20,7 +20,7 @@ namespace CPPN
             {
                 properties.width = width;
                 properties.height = height;
-                std::cout << properties.generateSVG() <<std::endl;
+                
                 texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 

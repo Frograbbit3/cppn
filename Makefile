@@ -3,7 +3,7 @@
 # ===================================
 
 CXX ?= g++
-CXXFLAGS ?= -std=c++26 -O2 -Iinclude
+CXXFLAGS ?= -std=c++17 -O2 -Iinclude
 LDFLAGS ?= -lSDL2 -lSDL2main -lSDL2_image -lfmt
 OUT_DIR := bin
 SRC := main.cpp
