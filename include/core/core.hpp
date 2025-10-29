@@ -19,12 +19,27 @@ namespace CPPN
         bool paused = false;
         bool init = false;
 
+        /*
+            The main init function. Use this to create the window.
+            @param width The width of the window.
+            @param height The height of the window.
+            @param title The title of the window.
+
+            @note These params are just passed into CPPN::Graphics::CreateWindow().
+            
+        */
         void Init(int width, int height, std::string title)
         {
             CPPN::Graphics::CreateWindow(width, height, title);
             init = true;
         }
+        /* 
+        The main tick function. If you don't want to use CPPN::Core::Run(), you may call this in your own loop.
+        
+        @note By running it on its own you will most likely break emscripten which crashes if it doesn't manage the loop.
 
+        @return A bool if to keep running.
+        */
         bool Tick()
         {
             CPPN::Graphics::TickWindow();
@@ -49,10 +64,10 @@ namespace CPPN
         }
 
 #ifdef __EMSCRIPTEN__
-        // Wrapper to satisfy emscripten_set_main_loop’s void() signature
+        /// Wrapper to satisfy emscripten_set_main_loop’s void() signature
         void TickWrapper() { Tick(); }
 #endif
-
+        /*Call this to start the main loop.*/
         void Run()
         {
 #ifdef __EMSCRIPTEN__

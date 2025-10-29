@@ -23,6 +23,11 @@ namespace CPPN {
     namespace FileSystem {
         static std::string SAVE_PATH;
         static std::string RESOURCE_PATH;
+        /*
+            Sets up the file system, allowing saving and loading assets.
+            @param companyName The name of your company, used for saving.
+            @param gameName The name of your game, used for saving.
+        */
         static void Init(std::string companyName, std::string gameName) {
             char* save= SDL_GetPrefPath(companyName.c_str(), gameName.c_str());
             SAVE_PATH = save;
@@ -33,6 +38,11 @@ namespace CPPN {
             SDL_free(core);
         }
 
+        /*
+            Combines two or more parts of a path into one. (folder1, folder2) --> folder1/folder2
+            @param parts The segments of paths
+
+        */
         std::string JoinPaths(const std::vector<std::string>& parts) {
             if (parts.empty()) return "";
 
@@ -57,12 +67,26 @@ namespace CPPN {
             return result;
         }
 
+
+        /*
+            Will take a relative path (so file.txt) and convert it to an absolute path to the assets based on the system (/app/file.txt)
+            @param rel The relative path.
+        */
         std::string AbsoluteResourcePath(std::string rel) {
             return JoinPaths({RESOURCE_PATH, rel});
         }
+        /*
+            Will take a relative path (so file.txt) and convert it to an absolute path to the save location based on the system (/.local/YourCompanyName/file.txt)
+            @param rel The relative path.
+        */
         std::string AbsoluteSavesPath(std::string rel) {
             return JoinPaths({SAVE_PATH, rel});
         }
+
+        /*
+            Attempts to check for an absolute path. Note that this will only work for checking against the SAVE_PATH and RESOURCE_PATH
+            @param path The path to check.
+        */
         bool IsAbsolutePath(const std::string& path) {
             if (path.compare(0, RESOURCE_PATH.size(), RESOURCE_PATH) == 0 ||
                 path.compare(0, SAVE_PATH.size(), SAVE_PATH) == 0) {
@@ -70,6 +94,10 @@ namespace CPPN {
             }
             return false;
         }
+        /*
+            Attempts to check if the file exists. Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
+            @param path The path to check.
+        */
         bool FileExists(std::string path) {
             if (!IsAbsolutePath(path)) {
                 path=AbsoluteResourcePath(path);
@@ -82,7 +110,11 @@ namespace CPPN {
             return false;
         }
 
-
+        
+        /*
+            Attempts to read the file, returning text. Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
+            @param path The file location to read.
+        */
         std::string OpenFileAsText(std::string path) {
             if (!FileExists(path)) {
                 throw std::runtime_error("File not found");
@@ -135,6 +167,13 @@ namespace CPPN {
                 SaveData() {
 
                 }
+
+                /*
+                    Set a value within the save data.
+                    @param category The major catagory to put the data in. Use this for majorly different objects, such as Player and Enemy.
+                    @param key The subkey to put the data in. Use this for properties of an object, like health for player or position for an enemy.
+                    @param value The value of the data. The **only types** supported as of now are bools, std::string, ints, floats, and doubles. Passing in other values may cause it to fail to save.
+                */
                 template <typename T>
                 void set(const std::string& category, const std::string& key, const T& value) {
                     auto& entries = data[category];
@@ -147,6 +186,13 @@ namespace CPPN {
                     entries.emplace_back(key, value);
                 }
 
+
+                /*
+                    Gets data from the save. You must perform an explicit cast to get the correct type of data back. (So use <int> if your data was saved as an int)
+                    @param category The data's catagory.
+                    @param key The data's subkey.
+                    @param defaultValue Used if you want to set a default value, in case that key does not exist.
+                */
                 template <typename T>
                 T get(const std::string& category, const std::string& key, const T& defaultValue = T{}) const {
                     auto it = data.find(category);
@@ -208,7 +254,11 @@ namespace CPPN {
                         }
                     }
                 }
-                std::string save(std::string pth = "") {
+                /*
+                    Saves the data and returns a string. 
+                    @note WriteSaveFile() is recommended over this and manual saving. 
+                */
+                std::string save() {
                     std::string dt;
                     dt.append(fmt::format("[CPPNSD]"));
                     for (const auto& m : data) {
@@ -261,35 +311,52 @@ namespace CPPN {
 
 
                     }
-                  //  std::cout << dt << std::endl;
-                    if (pth != "") {
-                        
-                    }
                     return dt;
                 }
 
 
         };
-        void WriteSaveFile(std::string path, SaveData &save) {
+        
+        /*
+            Writes text to a file, located at path.
+            @param path If not absolute, will save to the SAVE_PATH.
+        */
+        void WriteFile(std::string path, std::string text) {
             if (!IsAbsolutePath(path)) {
                 path=AbsoluteSavesPath(path);
             }
             FILE *file = fopen(path.c_str(), "w");
-            fprintf(file, "%s", save.save().c_str());
+            fprintf(file, "%s", text.c_str());
             fclose(file);
             return;
         }
 
+        /*
+            The preferred way to save a save file.
+            @param path The file to save to. This will be converted to absolute and saved to SAVE_PATH if another absolute path is not provided.
+        */
+        void WriteSaveFile(std::string path, SaveData &save) {
+            WriteFile(path, save.save().c_str());
+            return;
+        }
+
+        /*
+            This is the way to load a save file.
+
+            @param path The path to read the save from. Will be converted to absolute based on SAVE_PATH if an absolute path is not provided.
+            @return SaveData ready for you to use. You can use .save on this if you want to load it into your own SaveData object.
+        */
         SaveData OpenSaveFile(std::string path) {
             if (!FileExists(path)) {
                 throw std::runtime_error("File not found");
             }
             if (!IsAbsolutePath(path)) {
-                path=AbsoluteResourcePath(path);
+                path=AbsoluteSavesPath(path);
             }
             SaveData save;
             save.load(OpenFileAsText(path));
             return save;
         }
+
     }
 }

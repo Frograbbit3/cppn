@@ -18,23 +18,49 @@ struct RectangleProperties {
     double cornerRadius = 0.0;  // rounded corners
 
     // ---- Builder methods ----
+
+    /*
+        Sets the size of the rectangle. Will be overwritten unless you run .update on the rect.
+        @param w The width of the rect.
+        @param h The height of the rect.
+    */
     RectangleProperties& setSize(int w, int h) {
         width = w; height = h; return *this;
     }
+    /*
+        Sets the fill of the rectangle.
+        @param c CPPN::Graphics::Color color.
+    */
     RectangleProperties& setFill(const CPPN::Graphics::Color& c) {
         fill = c; return *this;
-    }
+    }   
+    /*
+        Sets the stroke color of the rectangle.
+        @param c CPPN::Graphics::Color color.
+    */
     RectangleProperties& setStroke(const CPPN::Graphics::Color& c) {
         stroke = c; return *this;
     }
+    /*
+        Sets the stroke size of the rectangle.
+        @param w The stroke width.
+    */
     RectangleProperties& setStrokeWidth(double w) {
         strokeWidth = w; return *this;
     }
+    /*
+        Sets the corner radius of the rectangle.
+        @param r The corner radius.
+    */
     RectangleProperties& setCornerRadius(double r) {
         cornerRadius = r; return *this;
     }
 
     // ---- SVG Generator ----
+    /*
+        Generates the SVG for the object. Used internally for rendering.
+        @return A string with SVG data.
+    */
     std::string generateSVG() const {
         int w = width  > 0 ? width  : 1;
         int h = height > 0 ? height : 1;
@@ -65,20 +91,40 @@ struct OvalProperties {
     double strokeWidth = 0.0; // 0 = no stroke
 
     // ---- Builder methods ----
+    /*
+        Sets the size of the oval. Will be overwritten unless you run .update on the oval.
+        @param w The width of the oval.
+        @param h The height of the oval.
+    */
     OvalProperties& setSize(int w, int h) {
         width = w; height = h; return *this;
     }
+    /*
+        Sets the fill of the oval.
+        @param c CPPN::Graphics::Color color.
+    */
     OvalProperties& setFill(const CPPN::Graphics::Color& c) {
         fill = c; return *this;
     }
+    /*
+        Sets the stroke color of the oval.
+        @param c CPPN::Graphics::Color color.
+    */
     OvalProperties& setStroke(const CPPN::Graphics::Color& c) {
         stroke = c; return *this;
     }
+    /*
+        Sets the stroke radius of the rectangle.
+        @param w The radius of the stroke.
+    */
     OvalProperties& setStrokeWidth(double w) {
         strokeWidth = w; return *this;
     }
 
-    // ---- SVG Generator ----
+    /*
+        Generates the SVG for the object. Used internally for rendering.
+        @return A string with SVG data.
+    */
     std::string generateSVG() const {
         int w = width  > 0 ? width  : 1;
         int h = height > 0 ? height : 1;

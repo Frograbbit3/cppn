@@ -19,6 +19,16 @@ namespace CPPN {
         int dragOffsetX = 0;
         int dragOffsetY = 0;
 
+
+        /*
+            Creates a window. 
+
+            @param width The width of the window.
+            @param height The height of the window.
+            @param title The title of the window.
+            
+            @note Use CPPN::Core::Init(width, height, title) over this.
+        */
         void CreateWindow(int width, int height, std::string title) {
             if (SDL_Init(SDL_INIT_VIDEO) != 0) {
                 std::cout << "Error initing SDL" << std::endl;
@@ -43,6 +53,10 @@ namespace CPPN {
                 std::cerr << "IMG_Init failed: " << IMG_GetError() << std::endl;
             }
         }
+
+        /*
+            Closes the window.
+        */
         void CloseWindow() {
             if (WindowInit) {
                 SDL_DestroyWindow(window);
@@ -53,6 +67,12 @@ namespace CPPN {
             }
         }
 
+        /*
+            @private
+            Loads an image into an SDL_Texture. Designed for private use, but can return an SDL_Texture from a file.
+
+            @note Unlike the filesystem, this will not automatically get the resources directory. For consistent use across platforms, use the FileSystem's AbsoluteSavesPath().
+        */
         SDL_Texture* LoadImage(const std::string &img) {
             if (!WindowInit || renderer==nullptr) {
                 std::cerr << "LoadImage: Renderer/window not initialized" << std::endl;
@@ -64,9 +84,21 @@ namespace CPPN {
             }
             return tex;
         }
+
+        /*
+            Adds a shape to the internal shapes vector. Private use only.
+            
+            @note BaseShapes automatically add themselves to this vector.
+        */
         void AddShape(CPPN::Graphics::BaseShape* shape) {
             shapes.emplace_back(shape);
         }
+
+        /*
+            Internal function to process dragging and draw the shapes to the screen. Private use, but callable manually.
+
+            @note No guarantees this will keep working if you call it manually. CPPN::Core::Run() will handle this.
+        */
         void DrawShapes() {
             // clear to black
             if (renderer) {
@@ -100,6 +132,9 @@ namespace CPPN {
 
             if (renderer) SDL_RenderPresent(renderer);
         }
+        /*
+            Private use only. Update function for drawing shapes. Called by CPPN::Core::Run()
+        */
         void TickWindow() {
             DrawShapes();
         }

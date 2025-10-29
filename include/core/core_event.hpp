@@ -5,6 +5,10 @@ namespace CPPN {
     namespace Private {
         bool running=true;
         SDL_Event e;
+        /*The main loop for processing events.
+        
+        @return A bool for if the program should stop.
+        */
         bool EventLoop() {
             while (SDL_PollEvent(&e)) {
                 if (e.type == SDL_QUIT) {

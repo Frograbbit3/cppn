@@ -41,7 +41,7 @@ int main() {
     mainOval.draggable=true;
 
     //Image
-    Graphics::Image f("file.png", 200, 50, 100, 100);
+    Graphics::Image f("file.png", 0, 0, 100, 100);
     f.draggable = true;
 
 
@@ -49,7 +49,7 @@ int main() {
     Core::AssignMacro(Enums::Event::ON_TICK, [&mainRect, &mainOval, &f]() {
         mainRect.rotation+=1.0f;
         mainOval.rotation+=1.0f;
-        f.rotation+=1.0f;
+      //  f.rotation+=1.0f;
     });
 
     Core::AssignMacro(Enums::Event::ON_KEY_PRESS, []() {

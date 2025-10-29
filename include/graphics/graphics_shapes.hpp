@@ -15,6 +15,16 @@ namespace CPPN
             CPPN::Graphics::RectangleProperties properties;
 
         public:
+
+            /*
+                Creates a rectangle.
+
+                @param x The x position.
+                @param y The y position.
+                @param width The width of the rectangle.
+                @param height The height of the rectangle.
+                @param settings Design for the rectangle. Created using a CPPN::Graphics::RectangleProperties.
+            */
             Rectangle(int x, int y, int width, int height, CPPN::Graphics::RectangleProperties settings)
                 : BaseShape(x, y, settings.fill), properties(settings)
             {
@@ -24,6 +34,10 @@ namespace CPPN
                 texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 
+
+            /*
+                Updates the texture.
+            */
             virtual void update() override
             {
                 rect.x = x;
@@ -32,10 +46,20 @@ namespace CPPN
                 rect.h = properties.height;
                 //texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
+
+            /*
+                Blits the rectangle to the screen. 
+                @param ren Use CPPN::Graphics::renderer.
+            */
             void draw(SDL_Renderer *ren) const override
             {
                 SDL_RenderCopyEx(ren, texture, nullptr, &rect, rotation, nullptr, SDL_FLIP_NONE);
             }
+            /*
+                Does AABB collision to check for collision in the rect.
+                @param px The point's x.
+                @param py The point's y.
+            */
             bool isColliding(int px, int py) const override
             {
                 return (px >= x && px <= x + properties.width) &&
@@ -50,6 +74,13 @@ namespace CPPN
 
         public:
             CPPN::Graphics::OvalProperties properties;
+            /*
+                Creates an oval.
+
+                @param x The x position.
+                @param y The y position.
+                @param settings Design for the oval. Created using a CPPN::Graphics::OvalProperties.
+            */
             Oval(int x, int y, CPPN::Graphics::OvalProperties settings)
                 : BaseShape(x, y, properties.fill), properties(settings)
             {
@@ -59,6 +90,10 @@ namespace CPPN
                 texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
             }
 
+
+            /*
+                Updates the properties.
+            */
             virtual void update() override
             {
                 rect.x = x;
@@ -67,11 +102,22 @@ namespace CPPN
                 rect.w = properties.width;
             }
 
+
+            /*
+                Blits the oval to the screen.
+                @param ren Use CPPN::Graphics::renderer
+            */
             void draw(SDL_Renderer *ren) const override
             {
                 SDL_RenderCopyEx(ren, texture, nullptr, &rect, rotation, nullptr, SDL_FLIP_NONE);
             }
 
+
+            /*
+                Does oval based collision.
+                @param px Point's x.
+                @param py Point's y.
+            */
             bool isColliding(int px, int py) const override {
                 int cx = rect.x + rect.w / 2;
                 int cy = rect.y + rect.h / 2;
