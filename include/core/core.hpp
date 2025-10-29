@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../graphics/graphics_core.hpp"
 #include "macros.hpp"
+#include "core_event.hpp"
 #include <map>
 #include <functional>
 #include <any>
@@ -26,7 +27,8 @@ namespace CPPN
 
         bool Tick()
         {
-            if (CPPN::Graphics::TickWindow() == false)
+            CPPN::Graphics::TickWindow();
+            if (CPPN::Private::EventLoop() == false)
             {
 #ifdef __EMSCRIPTEN__
                 emscripten_cancel_main_loop();
@@ -37,7 +39,7 @@ namespace CPPN
 
             if (!paused)
             {
-                CallMacro("tick");
+                CallMacro(CPPN::Enums::Event::ON_TICK);
             }
 
 #ifndef __EMSCRIPTEN__

@@ -20,6 +20,14 @@ main:
 	@chmod +x $(OUT_DIR)/main.o
 	@echo "✅ Built native binary -> $(OUT_DIR)/main.o"
 
+test:
+	@mkdir -p $(OUT_DIR)
+	@cp -r assets/* $(OUT_DIR)/ 2>/dev/null || true
+	@$(CXX) "tests/main.cpp" -o $(OUT_DIR)/tests.o $(CXXFLAGS) -fmodules-ts $(LDFLAGS) 
+	@chmod +x $(OUT_DIR)/tests.o
+	@echo "✅ Built native binary -> $(OUT_DIR)/tests.o"
+	@./$(OUT_DIR)/tests.o
+
 run: main
 	@./$(OUT_DIR)/main.o
 

@@ -1,14 +1,15 @@
 #pragma once
+#include "../enums/enums.hpp"
 #include <string>
 #include <map>
 #include <functional>
 #include <stdexcept>
 namespace CPPN {
     namespace Core {
-        std::map<std::string, std::function<void()>> MACROS;
+        std::map<CPPN::Enums::Event, std::function<void()>> MACROS;
         // Assign a macro with any callable that is convertible to std::function<void()>.
         template<typename Fn>
-        void AssignMacro(std::string macroName, Fn func) {
+        void AssignMacro(CPPN::Enums::Event macroName, Fn func) {
             if (MACROS.find(macroName) != MACROS.end()) {
                 return;
             }
@@ -16,7 +17,7 @@ namespace CPPN {
         }
 
         // Call a stored macro with no arguments.
-        void CallMacro(std::string macroName) {
+        void CallMacro(CPPN::Enums::Event macroName) {
             auto it = MACROS.find(macroName);
             if (it == MACROS.end()) {
                 return;

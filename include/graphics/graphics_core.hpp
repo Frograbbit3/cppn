@@ -11,7 +11,6 @@ namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
         SDL_Renderer* renderer = nullptr;
-        SDL_Event e;
         std::vector<CPPN::Graphics::BaseShape*> shapes;
         bool running = true;
         bool WindowInit = false;
@@ -79,7 +78,7 @@ namespace CPPN {
                 if (!shape) continue;
 
                 // Process dragging
-                if (CPPN::Input::leftMouseDown) {
+                if (CPPN::Input::mouse1down) {
                     if (!draggedShape && shape->draggable && shape->isColliding(CPPN::Input::mouseX, CPPN::Input::mouseY)) {
                         draggedShape = shape;
                         dragOffsetX = CPPN::Input::mouseX - shape->x;
@@ -101,31 +100,8 @@ namespace CPPN {
 
             if (renderer) SDL_RenderPresent(renderer);
         }
-        bool TickWindow() {
-            while (SDL_PollEvent(&e)) {
-                if (e.type == SDL_QUIT) {
-                    running = false;
-                }
-                if (e.type == SDL_MOUSEBUTTONDOWN) {
-                    CPPN::Input::leftMouseDown = true;
-                    CPPN::Core::CallMacro("mousedown");
-                }
-                if (e.type == SDL_MOUSEBUTTONUP) {
-                    CPPN::Input::leftMouseDown = false;
-                    CPPN::Core::CallMacro("mouseup");
-                }
-                if (e.type == SDL_MOUSEMOTION && CPPN::Input::leftMouseDown) {
-                    CPPN::Input::MoveMouse(e.motion.x, e.motion.y);
-                    CPPN::Core::CallMacro("mousedrag");
-                }
-                if (e.type == SDL_MOUSEMOTION) {
-                    CPPN::Input::MoveMouse(e.motion.x, e.motion.y);
-                    CPPN::Core::CallMacro("mousemove");
-                }
-            }
-        
+        void TickWindow() {
             DrawShapes();
-            return running;
         }
 
     }
