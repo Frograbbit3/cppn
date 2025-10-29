@@ -45,8 +45,9 @@ namespace CPPN
             virtual void draw(SDL_Renderer *ren) const = 0;
             /*
                 Will update shapes to fix property changes.
+                @param full Used for if you want a texture rerender (for property changes).
             */
-            virtual void update() {}
+            virtual void update(bool full) {}
             /*
                 Checks if a point is within the boundaries of the shape.
                 @param x The x position to check.

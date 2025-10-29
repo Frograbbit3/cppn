@@ -126,7 +126,7 @@ namespace CPPN {
                 auto col = shape->getColor();
                 SDL_SetRenderDrawColor(renderer, col.red, col.green, col.blue, col.alpha);
 
-                shape->update();
+                shape->update(false);
                 if (renderer) shape->draw(renderer);
             }
 

@@ -53,8 +53,9 @@ namespace CPPN
 
             /*
                 @deprecated Not required for images.
+                @param full Unused here.
             */
-            virtual void update() override {}
+            virtual void update(bool full) override {}
             /*
                 Draws the image to the screen. Not recommended to manually call.
                 @param ren Use CPPN::Graphics::renderer.

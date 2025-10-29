@@ -21,30 +21,37 @@ namespace CPPN
 
                 @param x The x position.
                 @param y The y position.
-                @param width The width of the rectangle.
-                @param height The height of the rectangle.
+                @param width The width of the rectangle. Pass in 0 to use the width from the RectangleProperties
+                @param height The height of the rectangle. Pass in 0 to use the height from the RectangleProperties
                 @param settings Design for the rectangle. Created using a CPPN::Graphics::RectangleProperties.
             */
             Rectangle(int x, int y, int width, int height, CPPN::Graphics::RectangleProperties settings)
                 : BaseShape(x, y, settings.fill), properties(settings)
             {
-                properties.width = width;
-                properties.height = height;
-                
-                texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                if (width > 1) {
+                    properties.width = width;
+                }             
+                if (height > 1) {
+                    properties.height = height;
+                }
+                update(true);
             }
 
 
             /*
                 Updates the texture.
+
+                @param full Rerenders the texture too.
             */
-            virtual void update() override
+            virtual void update(bool full) override
             {
                 rect.x = x;
                 rect.y = y;
-                rect.w = properties.width;
-                rect.h = properties.height;
-                //texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                rect.w = properties.width+ properties.strokeWidth;
+                rect.h = properties.height+ properties.strokeWidth;
+                if (full) {
+                    texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                }
             }
 
             /*
@@ -85,21 +92,23 @@ namespace CPPN
                 : BaseShape(x, y, properties.fill), properties(settings)
             {
                // texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
-                update();
-
-                texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                update(true);
             }
 
 
             /*
                 Updates the properties.
+                @param full Rerenders the texture too.
             */
-            virtual void update() override
+            virtual void update(bool full) override
             {
                 rect.x = x;
                 rect.y = y;
-                rect.h = properties.height;
-                rect.w = properties.width;
+                rect.h = properties.height+ properties.strokeWidth*2;
+                rect.w = properties.width + properties.strokeWidth*2;
+                if (full) {
+                    texture = CPPN::Graphics::LoadSVG(properties.generateSVG(), CPPN::Graphics::renderer);
+                }
             }
 
 
