@@ -56,6 +56,9 @@ namespace CPPN
             {
                 CallMacro(CPPN::Enums::Event::ON_TICK);
             }
+            if (CPPN::Input::keysPressed.size() > 0) {
+                CallMacro(CPPN::Enums::Event::ON_KEY_HOLD);
+            }
 
 #ifndef __EMSCRIPTEN__
             SDL_Delay(16); // only delay in native builds

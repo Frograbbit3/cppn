@@ -22,19 +22,18 @@ namespace CPPN {
                     CPPN::Input::mouse1down= false;
                     CPPN::Core::CallMacro(CPPN::Enums::Event::ON_MOUSE_RELEASE);
                 }
+                
                 if (e.type == SDL_KEYDOWN) {
                     SDL_Keycode key = e.key.keysym.sym;
                     std::string keyName(SDL_GetKeyName(key));
-                    if (CPPN::Input::keysPressed.find(keyName) != CPPN::Input::keysPressed.end()) {
-                        CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_HOLD);
-                    }else{
-                        CPPN::Input::KeyDown(keyName);
-                        CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_PRESS);
-                    }
+                    std::cout << "key down: " << keyName << std::endl;
+                    CPPN::Input::KeyDown(keyName);
+                    CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_PRESS);
                 }
                 if (e.type == SDL_KEYUP) {
                     SDL_Keycode key = e.key.keysym.sym;
                     std::string keyName(SDL_GetKeyName(key));
+                    std::cout << "key up: " << keyName << std::endl;
                     CPPN::Input::KeyUp(keyName);
                     CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_RELEASE);
                 }

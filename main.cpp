@@ -1,121 +1,51 @@
-#include <any>
-#include <iostream>
-#include <string>
 #include "cppn.h"
 using namespace CPPN;
-#include <sys/resource.h>
-#include <any>
-
-
-
-
 int main() {
-    //Core stuff
-    Core::Init(800,800, "Testing Window");
+    Core::Init(800, 800, "platformer");
 
+    Graphics::RectangleProperties floorprop;
+    floorprop.setFill(Color(128,255,128,255));
+    Graphics::Rectangle floor(0,700,800,100, floorprop);
 
-    //filesystem
-    FileSystem::Init("Testing Company", "Testing Game");
-    std::cout << "[Save Path]:" << FileSystem::SAVE_PATH << std::endl;
-    std::cout << "[Resources Path]:" << FileSystem::RESOURCE_PATH << std::endl;
+    Graphics::OvalProperties playerprop;
+    playerprop.setFill(Color(255,128,128,255))
+    .setSize(50,50);
+    Graphics::Oval player(400, 200, playerprop);
 
-    //saving
-    FileSystem::SaveData saved;
-    if (FileSystem::FileExists(FileSystem::AbsoluteSavesPath("file.txt"))) {
-        std::cout << "found file" << std::endl;
-        saved = FileSystem::OpenSaveFile(FileSystem::AbsoluteSavesPath("file.txt"));
-        std::cout << "loaded file" << std::endl;
-    }else{
-        std::cout << "starting from scratch" << std::endl;
-        saved.set("main", "rotation",static_cast<double>(0.0f));
-        saved.set("main", "x",static_cast<int>(0));
-        saved.set("main", "y",static_cast<int>(0));
-        std::cout << "finished init" << std::endl;
-    }
+    int yV = 0;
+    float vX = 0;
 
-    //Shape properties
-    Graphics::RectangleProperties testRect;
-    testRect
-    .setCornerRadius(25)
-    .setFill(Graphics::Color(255,128,255,128))
-    .setSize(128,128)
-    .setStroke(Graphics::Color(25,25,182,255))
-    .setStrokeWidth(15);
-
-    Graphics::Rectangle mainRect (50, 50, 50, 50, testRect);
-    mainRect.draggable = true;
-
-    Graphics::OvalProperties testOval;
-    testOval
-    .setFill(Graphics::Color(64,218,47, 255))
-    .setStroke(Graphics::Color(85,27,14, 255))
-    .setStrokeWidth(8)
-    .setSize(50, 100);
-
-    Graphics::Oval mainOval(150, 150, testOval);
-    mainOval.draggable=true;
-
-    //Image
-    Graphics::Image f("file.png", saved.get<int>("main", "x"), saved.get<int>("main", "y"), 100, 100);
-    f.draggable = true;
-    std::cout << "rotation is " << saved.get<double>("main", "rotation") << std::endl;
-    f.rotation = saved.get<double>("main", "rotation");
-
-    //Events
-    Core::AssignMacro(Event::ON_TICK, [&mainRect, &mainOval, &f]() {
-        mainRect.rotation+=1.0f;
-        mainOval.rotation+=1.0f;
-      //  f.rotation+=1.0f;
-    });
-
-
-    //Core::AssignMacro(Event::ON_MOUSE_MOVE, [&f]() {
-      //  if (f.isColliding(Input::mouseX, Input::mouseY)) {
-      //      std::cout << "collide with" << std::endl;
-      //  }
-   // });
-    Core::AssignMacro(Event::ON_MOUSE_DRAG, [&saved, &f, &mainOval, &mainRect](){
-        saved.set("main", "x", f.x);
-        saved.set("main", "y", f.y);
-        if (mainOval.isCollidingShape(mainRect)) {
-            std::cout << "collide" << std::endl;
-        }
-    });
-    Core::AssignMacro(Event::ON_KEY_PRESS, [&saved]() {
-        std::cout << "[Key press event, keys held]:(";
-        for (auto &m : Input::keysPressed) { 
-            std::cout << m << ",";
-            if (m == "A"){
-                std::cout << std::endl << "saved" << std::endl;
-                FileSystem::WriteSaveFile("file.txt", saved);
+    Core::AssignMacro(Enums::Event::ON_KEY_HOLD, [&vX, &yV]() {
+        for (auto &key: Input::keysPressed) {
+         //   std::cout << key <<std::endl;
+            if (Input::keysPressed.find("W") != Input::keysPressed.end()) {
+                yV = -15;
+            }
+            if (Input::keysPressed.find("A") != Input::keysPressed.end()) {
+                vX = -15;
+            }
+            if (Input::keysPressed.find("D") != Input::keysPressed.end()) {
+                vX = 15;
             }
         }
-        std::cout << ")"<<std::endl;
     });
 
-    Core::AssignMacro(Event::ON_KEY_RELEASE, []() {
-        std::cout << "[Key release event, keys held]:(";
-        for (auto &m : Input::keysPressed) { 
-            std::cout << m << ",";
-        }
-        std::cout << ")"<<std::endl;
-    });
-
-    Core::AssignMacro(Event::ON_KEY_HOLD, [&f, &saved]() {
-        std::cout << "[Key hold event, keys held]:(";
-        for (auto &m : Input::keysPressed) { 
-            std::cout << m << ",";
-            if (m == "Right") {
-                f.rotation+=2.5f;
+    Core::AssignMacro(Enums::Event::ON_TICK, [&player,&floor, &yV, &vX]() {
+        if (!player.isCollidingShape(floor)) {
+            yV += 1;
+            player.y += yV;
+        }else{
+            if (yV >= 0) {
+                player.y -= yV;
+                yV = 0;
+            }else{
+                player.y+=yV;
             }
-            if (m == "Left") {
-                f.rotation-=2.5f;
-            }
-            saved.set("main", "rotation", f.rotation);
         }
-        std::cout << ")"<<std::endl;
+        player.x += std::floor(vX);
+        vX *= 0.8;
     });
 
-    //Main loop
     Core::Run();
+
 }
