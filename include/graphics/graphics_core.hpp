@@ -108,9 +108,11 @@ namespace CPPN {
                 }
                 if (e.type == SDL_MOUSEBUTTONDOWN) {
                     CPPN::Input::leftMouseDown = true;
+                    CPPN::Core::CallMacro("mousedown");
                 }
                 if (e.type == SDL_MOUSEBUTTONUP) {
                     CPPN::Input::leftMouseDown = false;
+                    CPPN::Core::CallMacro("mouseup");
                 }
                 if (e.type == SDL_MOUSEMOTION && CPPN::Input::leftMouseDown) {
                     CPPN::Input::MoveMouse(e.motion.x, e.motion.y);

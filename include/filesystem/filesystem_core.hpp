@@ -82,6 +82,7 @@ namespace CPPN {
             return false;
         }
 
+
         std::string OpenFileAsText(std::string path) {
             if (!FileExists(path)) {
                 throw std::runtime_error("File not found");
@@ -114,45 +115,49 @@ namespace CPPN {
                     FLOAT=3,
                     DOUBLE=4,
                 };
-                std::vector<std::string> SplitByBrackets(std::string k) {
+                std::vector<std::string> SplitByBrackets(const std::string& k) {
                     std::vector<std::string> brackets;
+                    size_t startSpot = std::string::npos;
 
-                    int startSpot = 0;
-                    int i = 0;
-                    //k.erase(std::remove(k.begin(), k.end(), '\n'), k.end());
-                    //k.erase(std::remove(k.begin(), k.end(), '\r'), k.end());
-                    for (const char letter : k) {
-                        if (letter == '[') {
-                            startSpot=i;
+                    for (size_t i = 0; i < k.size(); ++i) {
+                        if (k[i] == '[')
+                            startSpot = i;
+                        else if (k[i] == ']' && startSpot != std::string::npos) {
+                            size_t len = i - startSpot + 1; // include closing bracket
+                            brackets.emplace_back(k.substr(startSpot, len));
+                            startSpot = std::string::npos;  // reset
                         }
-                        if (letter == ']') {
-                            //std::cout << "identified: " << k.substr(startSpot, i+1) << std::endl;
-                            brackets.emplace_back(k.substr(startSpot, i+1));                            
-                        }
-                        i++;
                     }
                     return brackets;
                 }
+
             public:
                 SaveData() {
 
                 }
-                void add(std::string catagory, std::string key, std::any value) {
-                    if (data.find(catagory)== data.end()) {
-                        data[catagory] = {};
-                    }
-                    data[catagory].emplace_back(key, value);
-                    return;
-                }
-
-                std::any get(std::string catagory, std::string key) {
-                    for (auto &v : data[catagory]) {
-                        if (v.first == key) {
-                            return v.second;
+                void set(const std::string& category, const std::string& key, std::any value) {
+                    auto& entries = data[category];
+                    for (auto& [k, v] : entries) {
+                        if (k == key) {
+                            v = std::move(value);  // overwrite existing value
+                            return;
                         }
                     }
-                    return NULL;
+                    // if not found, add new one
+                    entries.emplace_back(key, std::move(value));
                 }
+
+                const std::any& get(const std::string& category, const std::string& key) const {
+                    auto catIt = data.find(category);
+                    if (catIt == data.end()) throw std::runtime_error("Category not found: " + category);
+
+                    for (const auto& [k, v] : catIt->second) {
+                        if (k == key) return v;
+                    }
+
+                    throw std::runtime_error("Key not found: " + key);
+                }
+
 
                 void load(std::string save) {
                     std::vector<std::string> brack = SplitByBrackets(save);
@@ -164,36 +169,41 @@ namespace CPPN {
                     for (auto &k : brack) {
                         if (k[1] == '!') {
                             //catagory
-                            currentCatagory = k.substr(2,k.size()-1);
+                            currentCatagory = k.substr(2,k.size()-3);
+                            
                         }else if (k[1] == '@') {
-                            currentKey= k.substr(2,k.size()-1);
+                            currentKey= k.substr(2,k.size()-3);
                         }else if (k[1] == '%') {
-                            type = k[2];
+                            type = std::stoi(k.substr(2, 1));
                             if (data.find(currentCatagory) == data.end()) {
                                 data[currentCatagory] = {};
                             }
                             //[%20000000250]
                            // std::cout << k << std::endl;
                             size = std::stoi(k.substr(3, 8));
-                         //   std::cout << "size: " << size<<std::endl;
-
                             slice = k.substr(11, size) ;
-                       //     std::cout << "sliced: " << slice << std::endl;
                             switch (type){
                                 case static_cast<int>(SaveTypes::STRING):
-                                    data[currentCatagory].emplace_back(currentKey, slice);
+                                    data[currentCatagory].emplace_back(currentKey, std::any(slice));
+                                    break;
                                 case static_cast<int>(SaveTypes::BOOL):
-                                    data[currentCatagory].emplace_back(currentKey, (slice == "1") ? true : false);
+                                    data[currentCatagory].emplace_back(currentKey, std::any((slice == "1") ? true : false));
+                                    break;
                                 case static_cast<int>(SaveTypes::INT):
-                                    data[currentCatagory].emplace_back(currentKey, std::stoi(slice));
+                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stoi(slice)));
+                                    break;
                                 case static_cast<int>(SaveTypes::DOUBLE):
-                                    data[currentCatagory].emplace_back(currentKey, std::stod(slice));
+                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stod(slice)));
+                                    break;
+                                case static_cast<int>(SaveTypes::FLOAT):
+                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stof(slice)));
+                                    break;
 
                             }
                         }
                     }
                 }
-                std::string save() {
+                std::string save(std::string pth = "") {
                     std::string dt;
                     dt.append(fmt::format("[CPPNSD]"));
                     for (const auto& m : data) {
@@ -219,7 +229,7 @@ namespace CPPN {
                             }
                             else if (obj.second.type() == typeid(int)) {
                                 std::string val = fmt::format("{}", std::any_cast<int>(obj.second));
-                                dt.append(fmt::format("[%{}{:08}{}",
+                                dt.append(fmt::format("[%{}{:08}{}]",
                                     static_cast<int>(SaveTypes::INT),
                                     val.size(),
                                     val));
@@ -247,10 +257,34 @@ namespace CPPN {
 
                     }
                   //  std::cout << dt << std::endl;
+                    if (pth != "") {
+                        
+                    }
                     return dt;
                 }
 
 
         };
+        void WriteSaveFile(std::string path, SaveData &save) {
+            if (!IsAbsolutePath(path)) {
+                path=AbsoluteSavesPath(path);
+            }
+            FILE *file = fopen(path.c_str(), "w");
+            fprintf(file, "%s", save.save().c_str());
+            fclose(file);
+            return;
+        }
+
+        SaveData OpenSaveFile(std::string path) {
+            if (!FileExists(path)) {
+                throw std::runtime_error("File not found");
+            }
+            if (!IsAbsolutePath(path)) {
+                path=AbsoluteResourcePath(path);
+            }
+            SaveData save;
+            save.load(OpenFileAsText(path));
+            return save;
+        }
     }
 }
