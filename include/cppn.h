@@ -17,3 +17,4 @@
 
 //macros
 using Color = CPPN::Graphics::Color;
+using namespace CPPN::Enums;

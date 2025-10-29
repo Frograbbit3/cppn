@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include "stdio.h"
+#include "zlib.h"
 #include <vector>
 
 #ifdef __unix
@@ -23,6 +24,7 @@ namespace CPPN {
     namespace FileSystem {
         static std::string SAVE_PATH;
         static std::string RESOURCE_PATH;
+        
         /*
             Sets up the file system, allowing saving and loading assets.
             @param companyName The name of your company, used for saving.
@@ -83,6 +85,8 @@ namespace CPPN {
             return JoinPaths({SAVE_PATH, rel});
         }
 
+
+        
         /*
             Attempts to check for an absolute path. Note that this will only work for checking against the SAVE_PATH and RESOURCE_PATH
             @param path The path to check.
@@ -135,6 +139,76 @@ namespace CPPN {
             fclose(file);
             return text;
 
+        }
+        /*
+            Compresses a string using zlib.
+
+            @param str The string to compress
+            @param compressionLevel Pass in a Z_XXX compression level.
+        */
+        std::string CompressString(const std::string& str, int compressionLevel = Z_BEST_COMPRESSION) {
+            z_stream zs{};
+            if (deflateInit(&zs, compressionLevel) != Z_OK)
+                throw std::runtime_error("deflateInit failed");
+
+            zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
+            zs.avail_in = str.size();
+
+            int ret;
+            char outbuffer[32768];
+            std::string outstring;
+
+            // compress in chunks
+            do {
+                zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+                zs.avail_out = sizeof(outbuffer);
+
+                ret = deflate(&zs, Z_FINISH);
+
+                if (outstring.size() < zs.total_out)
+                    outstring.append(outbuffer, zs.total_out - outstring.size());
+            } while (ret == Z_OK);
+
+            deflateEnd(&zs);
+
+            if (ret != Z_STREAM_END)
+                throw std::runtime_error("Compression failed: " + std::to_string(ret));
+
+            return outstring;
+        }
+
+        /*
+            Decompresses a string.
+            @param string The string to decompress.
+        */
+        std::string DecompressString(const std::string& str) {
+            z_stream zs{};
+            if (inflateInit(&zs) != Z_OK)
+                throw std::runtime_error("inflateInit failed");
+
+            zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
+            zs.avail_in = str.size();
+
+            int ret;
+            char outbuffer[32768];
+            std::string outstring;
+
+            do {
+                zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+                zs.avail_out = sizeof(outbuffer);
+
+                ret = inflate(&zs, 0);
+
+                if (outstring.size() < zs.total_out)
+                    outstring.append(outbuffer, zs.total_out - outstring.size());
+            } while (ret == Z_OK);
+
+            inflateEnd(&zs);
+
+            if (ret != Z_STREAM_END)
+                throw std::runtime_error("Decompression failed: " + std::to_string(ret));
+
+            return outstring;
         }
         class SaveData {
             private:
@@ -211,6 +285,14 @@ namespace CPPN {
 
 
                 void load(std::string save) {
+
+                    //checking if the save file is compressed or corrupted
+                    if (save.substr(0,8) != "[CPPNSD]") {
+                        save=DecompressString(save);
+                        if (save.substr(0,7) != "[CPPNSD]") { //100% corrupted or invalid
+                            throw std::runtime_error("Unable to load save, are you sure it's valid?");
+                        }
+                    }
                     std::vector<std::string> brack = SplitByBrackets(save);
                     std::string currentCatagory;
                     std::string currentKey;
@@ -256,9 +338,11 @@ namespace CPPN {
                 }
                 /*
                     Saves the data and returns a string. 
+
+                    @param compress By default true but will perfrom strong zlib compression.
                     @note WriteSaveFile() is recommended over this and manual saving. 
                 */
-                std::string save() {
+                std::string save(bool compress=false) {
                     std::string dt;
                     dt.append(fmt::format("[CPPNSD]"));
                     for (const auto& m : data) {
@@ -311,6 +395,9 @@ namespace CPPN {
 
 
                     }
+                    if (compress) {
+                        return CompressString(dt);
+                    }
                     return dt;
                 }
 
@@ -357,6 +444,8 @@ namespace CPPN {
             save.load(OpenFileAsText(path));
             return save;
         }
+
+        
 
     }
 }
