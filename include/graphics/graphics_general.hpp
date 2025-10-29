@@ -18,7 +18,7 @@ namespace CPPN
             }
 
         public:
-            int x, y;
+            int x, y, height, width;
             double rotation=0;
             bool draggable = false;
             virtual ~BaseShape() = default;
@@ -55,7 +55,14 @@ namespace CPPN
                 @return Returns if it collides.
             */
             virtual bool isColliding(int x, int y) const {return false;}
+            /*
+                Checks if this shape is colliding with another shape.
 
+                @param shape The shape to collide against
+                @param steps The amount of collision steps. Higher is better but slower.
+                @note Rotation is not currently supported. This is also pixel perfect, assuming no rotation.
+            */
+            virtual bool isCollidingShape(BaseShape &shape, int steps = 8) const {return false;}
         };
 
        } // namespace Graphics

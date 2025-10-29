@@ -72,6 +72,23 @@ namespace CPPN
                 return (px >= x && px <= x + properties.width) &&
                     (py >= y && py <= y + properties.height);
             }
+            /*
+                Checks if this shape is colliding with another shape.
+
+                @param shape The shape to collide against
+                @param steps The amount of collision steps. Higher is better but slower.
+                @note Rotation is not currently supported. This is also pixel perfect, assuming no rotation.
+            */
+            bool isCollidingShape(BaseShape &shape, int steps = 8) const override {
+                for (int xP = x; xP < x + properties.width; xP += steps) {
+                    for (int yP = y; yP < y + properties.height; yP += steps) {
+                        if (shape.isColliding(xP, yP)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
         };
         class Oval : public BaseShape
         {
@@ -135,6 +152,23 @@ namespace CPPN
                 double dx = (px - cx) / double(a);
                 double dy = (py - cy) / double(b);
                 return dx*dx + dy*dy <= 1.0;
+            }
+            /*
+                Checks if this shape is colliding with another shape.
+
+                @param shape The shape to collide against
+                @param steps The amount of collision steps. Higher is better but slower.
+                @note Rotation is not currently supported. This is also pixel perfect, assuming no rotation.
+            */
+            bool isCollidingShape(BaseShape &shape, int steps = 8) const override {
+                for (int xP = x; xP < x + properties.width; xP += steps) {
+                    for (int yP = y; yP < y + properties.height; yP += steps) {
+                        if (shape.isColliding(xP, yP)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         };
 

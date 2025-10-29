@@ -5,7 +5,7 @@
 #include "graphics_core.hpp"
 #include <string>
 #include <iostream>
-
+using std::floor;
 namespace CPPN
 {
     namespace Graphics
@@ -14,6 +14,7 @@ namespace CPPN
         {
         private:
             SDL_Texture *texture;
+            std::vector<std::vector<uint8_t>> pixels;
 
         public:
             int width;
@@ -36,6 +37,8 @@ namespace CPPN
                     std::cerr << "Image: failed to load texture for '" << path << "'\n";
                     return;
                 }
+
+                pixels = CPPN::Graphics::GetGrayscale(CPPN::Graphics::renderer, texture);
 
                 if (width == 0 || height == 0) {
                     int tw = 0, th = 0;
@@ -71,11 +74,26 @@ namespace CPPN
             /*
                 Checks if the image collides with a point.
                 
-                @note This does AABB collision as pixel perfect is unsupported right now.
+                @note This does AABB collision, then it will attempt pixel perfect collision.
             */
             bool isColliding(int px, int py) const override
             {
-                return (px >= x && px <= x + width) && (py >= y && py <= y + height);
+                if (pixels.empty()) return false; // Ensure pixels is not empty
+
+                bool AABB = (px >= x && px <= x + width) && (py >= y && py <= y + height);
+                if (AABB) {
+                    std::cout << "AABB passed" << std::endl;
+                    int relX = px - x; // Adjusted relative X
+                    int relY = py - y; // Adjusted relative Y
+
+                    if (relX >= 0 && relX < width && relY >= 0 && relY < height) {
+                        if (pixels[relY][relX] == 1) {
+                            std::cout << "Pixels passed" << std::endl;
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         };
 

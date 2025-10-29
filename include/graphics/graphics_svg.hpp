@@ -66,13 +66,13 @@ struct RectangleProperties {
         int h = height > 0 ? height : 1;
 
         return fmt::format(
-            "<svg xmlns='http://www.w3.org/2000/svg' width='{}' height='{}'>"
-            "<rect width='{}' height='{}' rx='{}' ry='{}' "
+            "<svg xmlns='http://www.w3.org/2000/svg' width='{}' height='{}' viewBox='0 0 {} {}'>"
+            "<rect x='{}' y='{}' width='{}' height='{}' rx='{}' ry='{}' "
             "fill='rgb({},{},{})' fill-opacity='{}' "
             "stroke='rgb({},{},{})' stroke-width='{}' stroke-opacity='{}'/>"
             "</svg>",
-            w, h,
-            w, h,
+            w, h, w, h,
+            0, 0, w, h,
             cornerRadius, cornerRadius,
             fill.red, fill.green, fill.blue, fill.alpha / 255.0,
             stroke.red, stroke.green, stroke.blue, strokeWidth, stroke.alpha / 255.0);
@@ -128,15 +128,23 @@ struct OvalProperties {
     std::string generateSVG() const {
         int w = width  > 0 ? width  : 1;
         int h = height > 0 ? height : 1;
+        // pad by stroke width so the ellipse stroke is fully inside the canvas
+        double pad = strokeWidth;
+        int svgW = static_cast<int>(std::ceil(w + pad));
+        int svgH = static_cast<int>(std::ceil(h + pad));
+        double cx = svgW / 2.0;
+        double cy = svgH / 2.0;
+        double rx = w / 2.0;
+        double ry = h / 2.0;
 
         return fmt::format(
-            "<svg xmlns='http://www.w3.org/2000/svg' width='{}' height='{}'>"
+            "<svg xmlns='http://www.w3.org/2000/svg' width='{}' height='{}' viewBox='0 0 {} {}'>"
             "<ellipse cx='{}' cy='{}' rx='{}' ry='{}' "
             "fill='rgb({},{},{})' fill-opacity='{}' "
             "stroke='rgb({},{},{})' stroke-width='{}' stroke-opacity='{}'/>"
             "</svg>",
-            w+strokeWidth, h+strokeWidth,
-            w / 2.0, h / 2.0, w / 2.0, h / 2.0,
+            svgW, svgH, svgW, svgH,
+            cx, cy, rx, ry,
             fill.red, fill.green, fill.blue, fill.alpha / 255.0,
             stroke.red, stroke.green, stroke.blue, strokeWidth, stroke.alpha / 255.0);
     }

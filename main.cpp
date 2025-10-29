@@ -68,9 +68,18 @@ int main() {
       //  f.rotation+=1.0f;
     });
 
-    Core::AssignMacro(Event::ON_MOUSE_DRAG, [&saved, &f](){
+
+    //Core::AssignMacro(Event::ON_MOUSE_MOVE, [&f]() {
+      //  if (f.isColliding(Input::mouseX, Input::mouseY)) {
+      //      std::cout << "collide with" << std::endl;
+      //  }
+   // });
+    Core::AssignMacro(Event::ON_MOUSE_DRAG, [&saved, &f, &mainOval, &mainRect](){
         saved.set("main", "x", f.x);
         saved.set("main", "y", f.y);
+        if (mainOval.isCollidingShape(mainRect)) {
+            std::cout << "collide" << std::endl;
+        }
     });
     Core::AssignMacro(Event::ON_KEY_PRESS, [&saved]() {
         std::cout << "[Key press event, keys held]:(";
