@@ -13,7 +13,6 @@ namespace CPPN {
         SDL_Window* window = nullptr;
         SDL_Renderer* renderer = nullptr;
         std::vector<CPPN::Graphics::BaseShape*> shapes;
-        std::vector<CPPN::Widgets::Widget*> widgets;
         bool running = true;
         bool WindowInit = false;
         // Variables to track dragging state
@@ -94,14 +93,6 @@ namespace CPPN {
         */
         void AddShape(CPPN::Graphics::BaseShape* shape) {
             shapes.emplace_back(shape);
-        }
-        /*
-            Adds a widget to the internal widget vector. Private use only.
-            
-            @note Widgets automatically add themselves to this vector.
-        */
-        void AddWidget(CPPN::Widgets::Widget* shape) {
-            widgets.emplace_back(shape);
         }
 
 
