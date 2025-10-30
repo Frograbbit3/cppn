@@ -11,8 +11,8 @@
 #include "graphics/graphics_shapes.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "filesystem/filesystem_core.hpp"
+#include "widgets/widgets_core.hpp"
 #pragma once
-
 
 
 //macros

@@ -7,11 +7,13 @@
 #include "../core/input_core.hpp"
 #include "../core/macros.hpp"
 #include "../core/core.hpp"
+#include "../widgets/widgets_core.hpp"
 namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
         SDL_Renderer* renderer = nullptr;
         std::vector<CPPN::Graphics::BaseShape*> shapes;
+        std::vector<CPPN::Widgets::Widget*> widgets;
         bool running = true;
         bool WindowInit = false;
         // Variables to track dragging state
@@ -93,6 +95,15 @@ namespace CPPN {
         void AddShape(CPPN::Graphics::BaseShape* shape) {
             shapes.emplace_back(shape);
         }
+        /*
+            Adds a widget to the internal widget vector. Private use only.
+            
+            @note Widgets automatically add themselves to this vector.
+        */
+        void AddWidget(CPPN::Widgets::Widget* shape) {
+            widgets.emplace_back(shape);
+        }
+
 
         /*
             Internal function to process dragging and draw the shapes to the screen. Private use, but callable manually.

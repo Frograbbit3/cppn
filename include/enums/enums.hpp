@@ -14,4 +14,11 @@ namespace CPPN {
             ON_KEY_HOLD=8
         };
     }
+    namespace Widgets {
+        enum class AlignTypes {
+            CENTER=0,
+            LEFT=1,
+            RIGHT=2
+        };
+    }
 }
