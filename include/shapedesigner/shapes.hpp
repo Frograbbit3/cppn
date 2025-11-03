@@ -2,7 +2,7 @@
 #include "equations.hpp"
 #include "defines.hpp"
 #include "filesystem/filesystem_core.hpp"
-#include <SDL2/SDL_ttf.h>
+#include "../ttfs/stb_truetype.h"
 
 namespace {
     // Lazy-loaded shared font opened from the app's resource path

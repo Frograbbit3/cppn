@@ -1,51 +1,38 @@
-#include "cppn.h"
+#include "ttfs/text.hpp"
+void PrintBitmapAsASCII(const unsigned char* bitmap, int width, int height) {
+    if (!bitmap) {
+        printf("Error: bitmap is null.\n");
+        return;
+    }
 
+    // You can tweak this string to change the "contrast"
+    const char* shades = " .:-=+*#%@";
+    int numShades = 10; // number of characters in the above string
 
-using namespace CPPN;
-using namespace CPPN::ShapeDesigner;
-
-Color red = {255,0,0,255};
-Color blue = {0,0,255,255};
-int main() {
-    
-    Core::Init(800, 800, "test");
-
-    Shape shape;
-    shape.fillColor= Color(128,128,255,255);
-    shape.position.x = 50;
-    shape.position.y = 50;
-    shape.size.width = 100;
-    shape.size.height = 150;
-    shape.shape = ShapeTypes::OVAL;
-    shape.points = {
-        Vector2{0,0},
-        Vector2{25,0},
-        Vector2{63,25},
-        Vector2{12,52}
-    };
-    shape.draggable = true;
-
-    
-    Shape newshape;
-    newshape.fillColor = Color(255, 255, 255, 255);  // White text
-    newshape.shape = ShapeTypes::LABEL;
-    newshape.value = "hello, world!";  // Set value BEFORE cache()
-    newshape.position.x = 200;
-    newshape.position.y = 200;
-    newshape.draggable = true;
-    
-    // Cache after all properties are set
-    shape.cache();
-    newshape.cache();
-
-    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape, &newshape]() {
-        shape.transforms.rotation+=5;
-        if (shape.IsCollidingShape(&newshape)) {
-            shape.fillColor=red;
-        }else{
-            shape.fillColor=blue;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            unsigned char pixel = bitmap[y * width + x];
+            int shadeIndex = (pixel * (numShades - 1)) / 255; // map 0–255 to 0–9
+            putchar(shades[shadeIndex]);
         }
-        shape.cache(); //required in 99.9% of cases except rotation
-    });
-    Core::Run();
+        putchar('\n');
+    }
+}
+
+int main() {
+    std::string text ("hello world");
+    CPPN::FileSystem::Init("example", "example");
+    std::cout << CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf") << std::endl;
+    CPPN::FontSystem::Font font(CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf"), 32.0f);
+    std::cout << "font inited" << std::endl;
+    
+    unsigned char* bitmap = font.GetTextAsBitmap(text);
+    PrintBitmapAsASCII(bitmap, font.textWidth, font.textHeight);
+    
+    // Free the bitmap memory
+    if (bitmap) {
+        free(bitmap);
+    }
+    
+    return 0;
 }

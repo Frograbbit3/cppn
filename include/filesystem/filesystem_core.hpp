@@ -3,7 +3,8 @@
 #include <SDL2/SDL_stdinc.h>
 #include <any>
 #include <cstddef>
-#include <fmt/core.h>
+#define FMT_HEADER_ONLY
+#include "../fmt/core.h"
 #include <iostream>
 #include <map>
 #include <ostream>
@@ -139,6 +140,47 @@ namespace CPPN {
             fclose(file);
             return text;
 
+        }
+        
+        /*
+            Reads a binary file and returns its contents as a string. For binary files like fonts, images, etc.
+            Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
+            @param path The file location to read.
+        */
+        std::string OpenFileAsBinary(std::string path) {
+            if (!FileExists(path)) {
+                throw std::runtime_error("File not found");
+            }
+            if (!IsAbsolutePath(path)) {
+                path = AbsoluteResourcePath(path);
+            }
+            
+            FILE* file = fopen(path.c_str(), "rb");
+            if (!file) {
+                throw std::runtime_error("Unable to read file!");
+            }
+            
+            // Get file size
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            
+            if (fileSize <= 0) {
+                fclose(file);
+                throw std::runtime_error("File is empty or invalid!");
+            }
+            
+            // Read entire file into string
+            std::string data;
+            data.resize(fileSize);
+            size_t bytesRead = fread(&data[0], 1, fileSize, file);
+            fclose(file);
+            
+            if (bytesRead != (size_t)fileSize) {
+                throw std::runtime_error("Failed to read complete file!");
+            }
+            
+            return data;
         }
         /*
             Compresses a string using zlib.

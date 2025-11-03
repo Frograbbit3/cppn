@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include "defines.hpp"
 #include <fmt/core.h>
-#include <SDL2/SDL_ttf.h>
+#include "../ttfs/stb_truetype.h"
 // Forward-declare the renderer symbol to break include order cycles
 struct SDL_Renderer; // from SDL2
 namespace CPPN { namespace Graphics { extern SDL_Renderer* renderer; } }

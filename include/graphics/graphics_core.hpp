@@ -1,7 +1,8 @@
 #pragma once
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
-#include "SDL2/SDL_ttf.h"
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "../ttfs/stb_truetype.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>

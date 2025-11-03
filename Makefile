@@ -4,7 +4,7 @@
 
 CXX ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -Iinclude
-LDFLAGS ?= -lz -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lfmt
+LDFLAGS ?= -lz -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
 OUT_DIR := bin
 SRC := main.cpp
 
