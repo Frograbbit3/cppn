@@ -4,7 +4,7 @@
 #define FMT_HEADER_ONLY
 
 //config
-#define SHOW_HITBOXES true
+#define SHOW_HITBOXES false
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "graphics/graphics_core.hpp"

@@ -3,6 +3,9 @@
 
 using namespace CPPN;
 using namespace CPPN::ShapeDesigner;
+
+Color red = {255,0,0,255};
+Color blue = {0,0,255,255};
 int main() {
     
     Core::Init(800, 800, "test");
@@ -23,8 +26,22 @@ int main() {
     shape.draggable = true;
 
     
-    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape]() {
+    Shape newshape;
+    newshape.fillColor = Color(128,255,255,128);
+    newshape.shape = ShapeTypes::RECTANGLE;
+    newshape.size.width = 128;
+    newshape.size.height = 256;
+    shape.cache();
+    newshape.cache();
+    newshape.draggable=true;
+
+    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape, &newshape]() {
         shape.transforms.rotation+=5;
+        if (shape.IsCollidingShape(&newshape)) {
+            shape.fillColor=red;
+        }else{
+            shape.fillColor=blue;
+        }
         shape.cache(); //required in 99.9% of cases except rotation
     });
     Core::Run();
