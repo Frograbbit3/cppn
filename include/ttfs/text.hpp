@@ -54,7 +54,9 @@ namespace CPPN {
                     baseline = ascent * scale;
                 }
                 unsigned char* GetTextAsBitmap(std::string& txt) {
-                    const char* st = txt.append("  ").c_str(); 
+                    // Create a copy to avoid                     
+                    std::string txtCopy = txt + "  ";
+                    const char* st = txtCopy.c_str(); 
                     size_t size = strlen(st);
                     int currentx = 0;
                     float currentSpacing = 0.0f;
@@ -67,7 +69,7 @@ namespace CPPN {
                     int totalHeight = 0;
                     
                     // First pass: calculate dimensions
-                    for (int i = 0; i < txt.size(); i++) {
+                    for (int i = 0; i < txtCopy.size() - 2; i++) {
                         int glyphWidth, glyphHeight, xoff, yoff;
                         unsigned char* temp = stbtt_GetCodepointBitmap(&font, 0, scale, txt[i],
                                                                     &glyphWidth, &glyphHeight, &xoff, &yoff);

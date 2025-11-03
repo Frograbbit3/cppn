@@ -69,15 +69,22 @@ namespace CPPN {
             int textWidth = font->textWidth;
             int textHeight = font->textHeight;
             Uint32* pixels = (Uint32*)malloc(textWidth * textHeight * sizeof(Uint32));
+            
+            // Allocate format once outside the loop
+            SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
+            
             for (int i = 0; i < textWidth * textHeight; i++) {
                 unsigned char alpha = bitmap[i];
-                Uint32 pixel = SDL_MapRGBA(SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32),
+                Uint32 pixel = SDL_MapRGBA(format,
                                            shape->fillColor.red,
                                            shape->fillColor.green,
                                            shape->fillColor.blue,
                                            alpha);
                 pixels[i] = pixel;
             }
+            
+            // Free the format after use
+            SDL_FreeFormat(format);
             free(bitmap);
 
             // Update shape size to match rendered text dimensions
