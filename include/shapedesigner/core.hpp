@@ -22,6 +22,9 @@ namespace CPPN {
                 case (ShapeTypes::POLYGON):
                     return GeneratePolygon(shape);
                     break;
+                case (ShapeTypes::LABEL):
+                    return GenerateLabel(shape);
+                    break;
             }
             return nullptr;
         }

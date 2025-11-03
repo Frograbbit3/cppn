@@ -5,6 +5,8 @@
 
 //config
 #define SHOW_HITBOXES false
+#define GameName "Example Game"
+#define CompanyName "Company Name"
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "graphics/graphics_core.hpp"
@@ -18,3 +20,4 @@
 //macros
 using Color = CPPN::Graphics::Color;
 using namespace CPPN::Enums;
+

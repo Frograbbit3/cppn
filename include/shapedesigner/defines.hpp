@@ -42,7 +42,8 @@ namespace CPPN {
             OVAL=2,
             LINE=3,
             POLYLINE=4,
-            POLYGON=5
+            POLYGON=5,
+            LABEL=6
         };
 
 
@@ -67,6 +68,7 @@ namespace CPPN {
             Shape* parent = nullptr; //only used if you want subgrouping
             ShapeTypes shape = ShapeTypes::RECTANGLE; 
             bool draggable = false;
+            std::string value=""; //currently used for labels
 
             SDL_Texture* cached = nullptr; // used internally for rendering
             SDL_Rect* cached_rect = nullptr; //used internally for rendering
@@ -149,6 +151,10 @@ namespace CPPN {
                     case ShapeTypes::POLYLINE:
                         // TODO: implement distance-to-segment hit test
                         return false;
+                    //just does AABB it sucks lol
+                    case ShapeTypes::LABEL:
+                        return true;
+                        
                     default:
                         return false;
                 }

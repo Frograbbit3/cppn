@@ -27,13 +27,16 @@ int main() {
 
     
     Shape newshape;
-    newshape.fillColor = Color(128,255,255,128);
-    newshape.shape = ShapeTypes::RECTANGLE;
-    newshape.size.width = 128;
-    newshape.size.height = 256;
+    newshape.fillColor = Color(255, 255, 255, 255);  // White text
+    newshape.shape = ShapeTypes::LABEL;
+    newshape.value = "hello, world!";  // Set value BEFORE cache()
+    newshape.position.x = 200;
+    newshape.position.y = 200;
+    newshape.draggable = true;
+    
+    // Cache after all properties are set
     shape.cache();
     newshape.cache();
-    newshape.draggable=true;
 
     Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape, &newshape]() {
         shape.transforms.rotation+=5;

@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include "../graphics/graphics_core.hpp"
+#include "../filesystem/filesystem_core.hpp"
 #include "macros.hpp"
 #include "core_event.hpp"
 #include <map>
@@ -31,6 +32,7 @@ namespace CPPN
         void Init(int width, int height, std::string title)
         {
             CPPN::Graphics::CreateWindow(width, height, title);
+            CPPN::FileSystem::Init(std::string(CompanyName), std::string(GameName));
             init = true;
         }
         /* 
