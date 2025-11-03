@@ -8,7 +8,6 @@
 #include "../core/macros.hpp"
 #include "../core/core.hpp"
 #include "../shapedesigner/core.hpp"
-#include "../widgets/widgets_core.hpp"
 namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
@@ -16,8 +15,9 @@ namespace CPPN {
         std::vector<CPPN::ShapeDesigner::Shape*> shapes;
         bool running = true;
         bool WindowInit = false;
+        CPPN::Graphics::Color background {255,255,255,255};
         // Variables to track dragging state
-    CPPN::ShapeDesigner::Shape* draggingShape = nullptr;
+        CPPN::ShapeDesigner::Shape* draggingShape = nullptr;
         int dragOffsetX = 0;
         int dragOffsetY = 0;
 
@@ -114,7 +114,7 @@ namespace CPPN {
         void DrawShapes() {
             // clear to black
             if (renderer) {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                SDL_SetRenderDrawColor(renderer, background.red,background.green,background.blue,background.alpha);
                 SDL_RenderClear(renderer);
             }
 
@@ -138,6 +138,7 @@ namespace CPPN {
                         draggingShape = shape;
                         dragOffsetX = shape->position.x - Input::mouseX;
                         dragOffsetY = shape->position.y - Input::mouseY;
+                        shape->OnClick(dragOffsetX,dragOffsetY);
                     }
                     if (draggingShape == shape) {
                         shape->position.x = Input::mouseX + dragOffsetX;
@@ -145,6 +146,9 @@ namespace CPPN {
                         shape->cache(); 
                     }
                 } else {
+                    if (draggingShape) {
+                        draggingShape->OnRelease(dragOffsetX, dragOffsetY);
+                    }
                     draggingShape = nullptr;
                 }
 

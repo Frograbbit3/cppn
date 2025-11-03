@@ -4,7 +4,7 @@
 #define FMT_HEADER_ONLY
 
 //config
-#define SHOW_HITBOXES true
+#define SHOW_HITBOXES false
 #define GameName "Example Game"
 #define CompanyName "Company Name"
 #include "core/core.hpp"
@@ -13,7 +13,6 @@
 #include "core/input_core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "filesystem/filesystem_core.hpp"
-#include "widgets/widgets_core.hpp"
 #pragma once
 
 

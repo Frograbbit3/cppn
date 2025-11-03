@@ -16,7 +16,8 @@ namespace CPPN { namespace Math {
     constexpr inline bool IsInOval(int x, int y, int width, int height) noexcept;
 } }
 using CPPN::Graphics::Color;
-SDL_PixelFormat* PIXEL_FORMAT = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+// Use the same format as the surface creation to ensure consistency
+SDL_PixelFormat* PIXEL_FORMAT = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
 const uint32_t TRANSPARENT_COLOR = Color(0,0,0,0).pack(PIXEL_FORMAT);
 namespace CPPN {
     namespace ShapeDesigner {
@@ -62,6 +63,9 @@ namespace CPPN {
             Vector2 position;
             Size2 size;
             Transforms transforms;
+
+            std::function<void(int, int)> OnClick; //Optional, but triggers on release. Param 1 is the mouse X relative to the corner and param 2 is the mouse Y relative to the corner
+            std::function<void(int, int)> OnRelease; //Optional, but triggers on release. Param 1 is the mouse X relative to the corner and param 2 is the mouse Y relative to the corner
 
             std::vector<Vector2> points; // Optional list of points for polygons
 

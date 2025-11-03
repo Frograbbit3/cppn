@@ -17,6 +17,10 @@ namespace CPPN {
                 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
             );
             SDL_Texture* texture = SDL_CreateTextureFromSurface(CPPN::Graphics::renderer, surface);
+            // Set blend mode to support alpha transparency
+            if (texture) {
+                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+            }
             SDL_FreeSurface(surface);
             // pixels was allocated by caller with malloc; safe to free after texture creation
             if (pixels) { free(pixels); }

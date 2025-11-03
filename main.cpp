@@ -1,38 +1,59 @@
-#include "ttfs/text.hpp"
-void PrintBitmapAsASCII(const unsigned char* bitmap, int width, int height) {
-    if (!bitmap) {
-        printf("Error: bitmap is null.\n");
-        return;
-    }
+#include "cppn.h"
 
-    // You can tweak this string to change the "contrast"
-    const char* shades = " .:-=+*#%@";
-    int numShades = 10; // number of characters in the above string
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            unsigned char pixel = bitmap[y * width + x];
-            int shadeIndex = (pixel * (numShades - 1)) / 255; // map 0–255 to 0–9
-            putchar(shades[shadeIndex]);
-        }
-        putchar('\n');
-    }
-}
+using namespace CPPN;
+using namespace CPPN::ShapeDesigner;
 
+Color red = {255,0,0,255};
+Color blue = {0,0,255,255};  // Lighter blue for better visibility
 int main() {
-    std::string text ("hello world");
-    CPPN::FileSystem::Init("example", "example");
-    std::cout << CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf") << std::endl;
-    CPPN::FontSystem::Font font(CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf"), 32.0f);
-    std::cout << "font inited" << std::endl;
     
-    unsigned char* bitmap = font.GetTextAsBitmap(text);
-    PrintBitmapAsASCII(bitmap, font.textWidth, font.textHeight);
+    Core::Init(800, 800, "test");
+
+    Shape shape;
+    shape.fillColor= Color(128,128,255,255);
+    shape.position.x = 50;
+    shape.position.y = 50;
+    shape.size.width = 150;
+    shape.size.height = 100;
+    shape.shape = ShapeTypes::RECTANGLE;
+    shape.points = {
+        Vector2{0,0},
+        Vector2{25,0},
+        Vector2{63,25},
+        Vector2{12,52}
+    };
+    shape.draggable = true;
+
     
-    // Free the bitmap memory
-    if (bitmap) {
-        free(bitmap);
-    }
+    Shape newshape;
+    newshape.fillColor = Color(255, 255, 255, 255);  // White text
+    newshape.shape = ShapeTypes::LABEL;
+    newshape.value = "hello, world!";  // Set value BEFORE cache()
+    newshape.position.x = 200;
+    newshape.position.y = 200;
+    newshape.draggable = true;
     
-    return 0;
+    // Cache after all properties are set
+    shape.cache();
+    newshape.cache();
+
+
+    shape.OnClick = [](int offX, int offY) {
+        std::cout << "click" << std::endl;
+    };
+    shape.OnRelease = [](int offX, int offY) {
+        std::cout << "declick" << std::endl;
+    };
+    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape, &newshape]() {
+        if (shape.IsCollidingShape(&newshape)) {
+            shape.fillColor=red;
+        }else{
+            shape.fillColor=blue;
+        }
+        shape.position.x=Input::mouseX-shape.size.width/2;
+        shape.position.y=Input::mouseY-shape.size.height/2;
+        shape.cache(); //required in 99.9% of cases except rotation
+    });
+    Core::Run();
 }
