@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 #define FMT_HEADER_ONLY
+
+//config
+#define SHOW_HITBOXES true
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "graphics/graphics_core.hpp"
