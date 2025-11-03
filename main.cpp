@@ -24,7 +24,7 @@ int main() {
 
     
     Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape]() {
-       // shape.transforms.rotation+=5;
+        shape.transforms.rotation+=5;
         shape.cache(); //required in 99.9% of cases except rotation
     });
     Core::Run();

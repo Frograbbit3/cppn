@@ -17,6 +17,8 @@ namespace CPPN {
             );
             SDL_Texture* texture = SDL_CreateTextureFromSurface(CPPN::Graphics::renderer, surface);
             SDL_FreeSurface(surface);
+            // pixels was allocated by caller with malloc; safe to free after texture creation
+            if (pixels) { free(pixels); }
             return texture;
         }
     }

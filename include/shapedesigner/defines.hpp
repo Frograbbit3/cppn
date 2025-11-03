@@ -14,7 +14,7 @@ namespace CPPN { namespace Math {
     constexpr inline bool IsInCircle(int x, int y, int radius) noexcept;
     constexpr inline bool IsInOval(int x, int y, int width, int height) noexcept;
 } }
-using CPPN::Graphicss::Color;
+using CPPN::Graphics::Color;
 SDL_PixelFormat* PIXEL_FORMAT = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 const uint32_t TRANSPARENT_COLOR = Color(0,0,0,0).pack(PIXEL_FORMAT);
 namespace CPPN {
@@ -75,12 +75,17 @@ namespace CPPN {
             }
             ~Shape() {
                 CPPN::Graphics::RemoveShape(this);
+                if (cached) { SDL_DestroyTexture(cached); cached = nullptr; }
                 if (cached_rect) { delete cached_rect; cached_rect = nullptr; }
-                // cached texture is owned by renderer; not destroyed here
             }
             void cache() {
+                if (this->cached) { SDL_DestroyTexture(this->cached); this->cached = nullptr; }
+                if (!this->cached_rect) this->cached_rect = new SDL_Rect{};
                 this->cached = ConvertShapeToTexture(this);
-                this->cached_rect = new SDL_Rect{this->position.x, this->position.y, this->size.width, this->size.height};
+                this->cached_rect->x = this->position.x;
+                this->cached_rect->y = this->position.y;
+                this->cached_rect->w = this->size.width;
+                this->cached_rect->h = this->size.height;
             }
 
             bool IsColliding(int x, int y) {

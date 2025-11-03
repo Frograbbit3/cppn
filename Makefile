@@ -47,6 +47,7 @@ main-web:
 		-s USE_SDL_IMAGE=2 \
 		-s SDL2_IMAGE_FORMATS='["png"]' \
 		--preload-file assets@/ \
+		-sASSERTIONS \
 		-O2
 
 	@echo "✅ Web build complete -> $(OUT_DIR)/web/index.html"

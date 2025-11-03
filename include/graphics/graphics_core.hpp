@@ -17,7 +17,7 @@ namespace CPPN {
         bool running = true;
         bool WindowInit = false;
         // Variables to track dragging state
-        CPPN::ShapeDesigner::Shape* draggingShape;
+    CPPN::ShapeDesigner::Shape* draggingShape = nullptr;
         int dragOffsetX = 0;
         int dragOffsetY = 0;
 
