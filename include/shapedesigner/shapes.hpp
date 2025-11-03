@@ -2,23 +2,8 @@
 #include "equations.hpp"
 #include "defines.hpp"
 #include "filesystem/filesystem_core.hpp"
-#include "../ttfs/stb_truetype.h"
-
-namespace {
-    // Lazy-loaded shared font opened from the app's resource path
-    TTF_Font* GetSharedFont() {
-        static TTF_Font* s_font = nullptr;
-        if (!s_font) {
-            std::string path = CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf");
-            s_font = TTF_OpenFont(path.c_str(), 32);
-            if (!s_font) {
-                SDL_Log("TTF_OpenFont failed for %s: %s", path.c_str(), TTF_GetError());
-            }
-        }
-        return s_font;
-    }
-}
-
+#include "../ttfs/text.hpp"
+CPPN::FontSystem::Font* font = nullptr;
 namespace CPPN {
     namespace ShapeDesigner {
         SDL_Texture* GenerateOval(Shape* shape) {
@@ -59,35 +44,47 @@ namespace CPPN {
         }
 
         SDL_Texture* GenerateLabel(Shape* shape) {
-            TTF_Font* font = GetSharedFont();
-            if (!font) {
-                SDL_Log("GenerateLabel: Font not available");
-                return nullptr;
-            }
             
+            
+            CPPN::FileSystem::Init("ex","ex");
+            if (font == nullptr) {
+                 font = new CPPN::FontSystem::Font{CPPN::FileSystem::AbsoluteResourcePath("Roboto-Regular.ttf"), 32.0f}; // temp.
+            }
+
+
             if (shape->value.empty()) {
                 SDL_Log("GenerateLabel: value is empty");
                 return nullptr;
             }
             
             SDL_Color color = {shape->fillColor.red, shape->fillColor.green, shape->fillColor.blue, shape->fillColor.alpha};
-            SDL_Surface* surface = TTF_RenderText_Blended(font, shape->value.c_str(), color);
-            if (!surface) {
-                SDL_Log("TTF_RenderText_Blended failed: %s", TTF_GetError());
+            // Get bitmap data from font system
+            unsigned char* bitmap = font->GetTextAsBitmap(shape->value);
+            if (!bitmap) {
+                SDL_Log("GetTextAsBitmap failed");
                 return nullptr;
             }
-            
-            // Update shape size to match rendered text dimensions
-            shape->size.width = surface->w;
-            shape->size.height = surface->h;
-            
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(CPPN::Graphics::renderer, surface);
-            SDL_FreeSurface(surface);
-            
-            if (!texture) {
-                SDL_Log("SDL_CreateTextureFromSurface failed: %s", SDL_GetError());
+
+            // Assume font.GetTextAsBitmap also provides width and height, or you need to get them from font or shape
+            int textWidth = font->textWidth;
+            int textHeight = font->textHeight;
+            Uint32* pixels = (Uint32*)malloc(textWidth * textHeight * sizeof(Uint32));
+            for (int i = 0; i < textWidth * textHeight; i++) {
+                unsigned char alpha = bitmap[i];
+                Uint32 pixel = SDL_MapRGBA(SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32),
+                                           shape->fillColor.red,
+                                           shape->fillColor.green,
+                                           shape->fillColor.blue,
+                                           alpha);
+                pixels[i] = pixel;
             }
-            
+            free(bitmap);
+
+            // Update shape size to match rendered text dimensions
+            shape->size.width = textWidth;
+            shape->size.height = textHeight;
+
+            SDL_Texture* texture = ConvertPixelMapToTexture(pixels, textWidth, textHeight);
             return texture;
         }
 

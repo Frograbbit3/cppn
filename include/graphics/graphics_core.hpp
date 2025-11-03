@@ -1,8 +1,6 @@
 #pragma once
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "../ttfs/stb_truetype.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -37,9 +35,6 @@ namespace CPPN {
             if (SDL_Init(SDL_INIT_VIDEO) != 0) {
                 std::cout << "Error initing SDL" << std::endl;
             }
-            if (TTF_Init() == -1) {
-                std::cerr << "TTF_Init failed: " << TTF_GetError() << std::endl;
-            }
             // create a normal shown window (not Vulkan) so the 2D renderer works
             window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
             if (window == NULL) {
@@ -71,7 +66,6 @@ namespace CPPN {
                 // quit SDL_image first
                 IMG_Quit();
                 // quit SDL_ttf
-                TTF_Quit();
                 SDL_Quit();
             }
         }
