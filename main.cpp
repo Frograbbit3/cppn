@@ -1,6 +1,4 @@
-#include "core/core.hpp"
-#include "shapedesigner/core.hpp"
-
+#include "cppn.h"
 
 
 using namespace CPPN;
@@ -15,7 +13,7 @@ int main() {
     shape.position.y = 50;
     shape.size.width = 100;
     shape.size.height = 150;
-    shape.shape = ShapeTypes::OVAL;
+    shape.shape = ShapeTypes::POLYGON;
     shape.points = {
         Vector2{0,0},
         Vector2{25,0},
@@ -24,27 +22,13 @@ int main() {
     };
 
     //boilerplate for testing
-    SDL_Texture* text = ConvertShapeToTexture(&shape);
-    SDL_Rect rct{shape.position.x, shape.position.y, shape.size.width, shape.size.height};
-    bool running = true;
-    SDL_Event e;       
-    while (running) {
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT)
-                running = false;
-            if (e.type == SDL_MOUSEMOTION) {
-                std::cout << "(" << e.motion.x << "," << e.motion.y << ")"<<std::endl;
-            }
-        }
 
-        SDL_SetRenderDrawColor(CPPN::Graphics::renderer, 20, 20, 20, 255);
-        SDL_RenderClear(CPPN::Graphics::renderer);
-        SDL_RenderCopyEx(CPPN::Graphics::renderer, text, nullptr, &rct, shape.transforms.rotation, NULL, SDL_FLIP_NONE);
+    Graphics::AddShape(&shape);
+
+
+    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape]() {
         shape.transforms.rotation+=5;
-        // draw something
-
-        SDL_RenderPresent(CPPN::Graphics::renderer);
-    }
-
-    //Core::Run();
+        shape.cache();
+    });
+    Core::Run();
 }

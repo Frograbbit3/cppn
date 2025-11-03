@@ -3,6 +3,9 @@
 #include <SDL2/SDL.h>
 #include "defines.hpp"
 #include <fmt/core.h>
+// Forward-declare the renderer symbol to break include order cycles
+struct SDL_Renderer; // from SDL2
+namespace CPPN { namespace Graphics { extern SDL_Renderer* renderer; } }
 using namespace CPPN;
 using namespace CPPN::ShapeDesigner;
 namespace CPPN {
@@ -12,7 +15,7 @@ namespace CPPN {
                 pixels, width, height, 32, width * 4,
                 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
             );
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(Graphics::renderer, surface);
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(CPPN::Graphics::renderer, surface);
             SDL_FreeSurface(surface);
             return texture;
         }

@@ -3,20 +3,19 @@
 #include "SDL2/SDL_image.h"
 #include <iostream>
 #include <vector>
-#include "graphics_general.hpp"
 #include "../core/input_core.hpp"
 #include "../core/macros.hpp"
 #include "../core/core.hpp"
+#include "../shapedesigner/core.hpp"
 #include "../widgets/widgets_core.hpp"
 namespace CPPN {
     namespace Graphics {
         SDL_Window* window = nullptr;
         SDL_Renderer* renderer = nullptr;
-        std::vector<CPPN::Graphics::BaseShape*> shapes;
+        std::vector<CPPN::ShapeDesigner::Shape*> shapes;
         bool running = true;
         bool WindowInit = false;
         // Variables to track dragging state
-        BaseShape* draggedShape = nullptr;
         int dragOffsetX = 0;
         int dragOffsetY = 0;
 
@@ -91,7 +90,7 @@ namespace CPPN {
             
             @note BaseShapes automatically add themselves to this vector.
         */
-        void AddShape(CPPN::Graphics::BaseShape* shape) {
+        void AddShape(CPPN::ShapeDesigner::Shape* shape) {
             shapes.emplace_back(shape);
         }
 
@@ -104,33 +103,15 @@ namespace CPPN {
         void DrawShapes() {
             // clear to black
             if (renderer) {
-                SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderClear(renderer);
             }
 
-            for (CPPN::Graphics::BaseShape* shape : shapes) {
-                if (!shape) continue;
-
-                // Process dragging
-                if (CPPN::Input::mouse1down) {
-                    if (!draggedShape && shape->draggable && shape->isColliding(CPPN::Input::mouseX, CPPN::Input::mouseY)) {
-                        draggedShape = shape;
-                        dragOffsetX = CPPN::Input::mouseX - shape->x;
-                        dragOffsetY = CPPN::Input::mouseY - shape->y;
-                    }
-                    if (draggedShape == shape) {
-                        shape->setPosition(CPPN::Input::mouseX - dragOffsetX, CPPN::Input::mouseY - dragOffsetY);
-                    }
-                } else {
-                    draggedShape = nullptr; // Reset dragging state when the mouse button is released
-                }
-
-                auto col = shape->getColor();
-                SDL_SetRenderDrawColor(renderer, col.red, col.green, col.blue, col.alpha);
-
-                shape->update(false);
-                if (renderer) shape->draw(renderer);
-            }
+            for (CPPN::ShapeDesigner::Shape* shape : shapes) {
+                shape->cache();
+                // draw full texture (srcrect=nullptr) at cached destination rect
+                SDL_RenderCopyEx(renderer, shape->cached, nullptr, shape->cached_rect, shape->transforms.rotation, NULL, SDL_FLIP_NONE);
+            } 
 
             if (renderer) SDL_RenderPresent(renderer);
         }

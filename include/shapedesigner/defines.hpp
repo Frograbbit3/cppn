@@ -2,6 +2,9 @@
 #include <string>
 #include "../graphics/graphics_core.hpp"
 #include "../graphics/graphics_utils.hpp"
+// Forward declarations to avoid include-order issues
+struct SDL_Texture; // from SDL2
+namespace CPPN { namespace ShapeDesigner { struct Shape; SDL_Texture* ConvertShapeToTexture(Shape* shape); } }
 using CPPN::Graphics::Color;
 SDL_PixelFormat* PIXEL_FORMAT = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 const uint32_t TRANSPARENT_COLOR = Color(0,0,0,0).pack(PIXEL_FORMAT);
@@ -53,6 +56,12 @@ namespace CPPN {
 
             Shape* parent = nullptr; //only used if you want subgrouping
             ShapeTypes shape = ShapeTypes::RECTANGLE; 
+            SDL_Texture* cached = nullptr; // used internally for rendering
+            SDL_Rect* cached_rect = nullptr; //used internally for rendering
+            void cache() {
+                this->cached = ConvertShapeToTexture(this);
+                this->cached_rect = new SDL_Rect{this->position.x, this->position.y, this->size.width, this->size.height};
+            }
         };
     }
 }
