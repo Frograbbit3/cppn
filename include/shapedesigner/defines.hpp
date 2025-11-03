@@ -49,6 +49,8 @@ namespace CPPN {
             Size2 size;
             Transforms transforms;
 
+            std::vector<Vector2> points; // Optional list of points for polygons
+
             Shape* parent = nullptr; //only used if you want subgrouping
             ShapeTypes shape = ShapeTypes::RECTANGLE; 
         };

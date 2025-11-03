@@ -2,8 +2,9 @@
 #include <cmath>
 #include <SDL2/SDL.h>
 #include "defines.hpp"
+#include <fmt/core.h>
 using namespace CPPN;
-
+using namespace CPPN::ShapeDesigner;
 namespace CPPN {
     namespace ShapeDesigner {
         SDL_Texture* ConvertPixelMapToTexture(Uint32* pixels, int width, int height) {
@@ -24,30 +25,35 @@ namespace CPPN {
             }
             return new_num;
         }
-        /*The quake algorithm. I had to, i'm sorry.*/
-        constexpr inline float sqrt(float number) noexcept {
-            long i=0;
-            float x2=0.0f;
-            float y=0.0f;
-            const float threehalfs = 1.5F;
-
-            x2 = number * 0.5F;
-            y = number;
-            i = *(long *) &y;               // Evil floating point bit level hacking
-            i = 0x5f3759df - (i >> 1);      // What the f***?
-            y = *(float *) &i;
-            y = y * (threehalfs - (x2 * y * y)); // 1st iteration
-            return number*y;
+        constexpr float sqrt(float x) noexcept {
+            if (x <= 0.0f) return 0.0f;
+            float guess = x;
+            for (int i = 0; i < 8; ++i)
+                guess = 0.5f * (guess + x / guess);
+            return guess;
         }
 
         /*Not really needed but it completes the set*/
         constexpr inline bool IsInRect(int x, int y, int width, int height) noexcept {
             return (x >= 0 && x <=width) && (y>=0 && y<=height);
-        };
+        }
+
+        // For relative points (relative to shape's position)
+        bool IsInPolygon(int x, int y, const std::vector<Vector2>& pts) noexcept {
+            bool inside = false;
+            for (size_t i = 0, j = pts.size() - 1; i < pts.size(); j = i++) {
+                bool intersect = ((pts[i].y > y) != (pts[j].y > y)) &&
+                                (x < (pts[j].x - pts[i].x) * (y - pts[i].y) / float(pts[j].y - pts[i].y) + pts[i].x);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
 
         constexpr inline bool IsInCircle(int x, int y, int radius) noexcept {
-            return (x*x + y*y < radius*2);
-        };
+            int dx = x - radius;
+            int dy = y - radius;
+            return (dx * dx + dy * dy) <= (radius * radius);
+        }
 
         constexpr inline bool IsInOval(int x, int y, int width, int height) noexcept {
             const int a = width  / 2;

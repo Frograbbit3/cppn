@@ -19,6 +19,9 @@ namespace CPPN {
                 case (ShapeTypes::CIRCLE):
                     return GenerateCircle(shape);
                     break;
+                case (ShapeTypes::POLYGON):
+                    return GeneratePolygon(shape);
+                    break;
             }
             return nullptr;
         }
