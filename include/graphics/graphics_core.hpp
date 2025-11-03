@@ -134,20 +134,24 @@ namespace CPPN {
                 //process drag
                 if (Input::mouse1down) {
 
-                    if (!draggingShape && shape->draggable && shape->IsColliding(Input::mouseX, Input::mouseY)) {
+                    if (!draggingShape  && shape->IsColliding(Input::mouseX, Input::mouseY)) {
                         draggingShape = shape;
                         dragOffsetX = shape->position.x - Input::mouseX;
                         dragOffsetY = shape->position.y - Input::mouseY;
+                        if (draggingShape->OnClick) {
                         shape->OnClick(dragOffsetX,dragOffsetY);
+                        }
                     }
-                    if (draggingShape == shape) {
+                    if (draggingShape == shape && shape->draggable) {
                         shape->position.x = Input::mouseX + dragOffsetX;
                         shape->position.y = Input::mouseY + dragOffsetY;
                         shape->cache(); 
                     }
                 } else {
                     if (draggingShape) {
-                        draggingShape->OnRelease(dragOffsetX, dragOffsetY);
+                        if (draggingShape->OnRelease) {
+                            draggingShape->OnRelease(dragOffsetX, dragOffsetY);
+                        }
                     }
                     draggingShape = nullptr;
                 }

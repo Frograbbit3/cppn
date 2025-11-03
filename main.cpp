@@ -6,54 +6,38 @@ using namespace CPPN::ShapeDesigner;
 
 Color red = {255,0,0,255};
 Color blue = {0,0,255,255};  // Lighter blue for better visibility
+
+
+Shape* CreateButton(int x, int y, std::string value) {
+    Shape* background = new Shape();
+    background->fillColor = red;
+    background->position.x = x;
+    background->position.y = y;
+    background->size.width = 300;
+    background->size.height = 75;
+    background->shape = ShapeTypes::RECTANGLE;
+
+    Shape* label = new Shape();
+    label->fillColor = {255,255,255,255};
+    label->position.x = background->position.x + background->size.width/4;
+    label->position.y = background->position.y + background->size.height/4;
+    label->value = value;
+    label->shape = ShapeTypes::LABEL;
+
+    background->cache();
+    label->cache();
+    // You may want to store 'label' somewhere or attach it to 'background' if your framework supports it.
+    return background;
+}
 int main() {
     
     Core::Init(800, 800, "test");
-
-    Shape shape;
-    shape.fillColor= Color(128,128,255,255);
-    shape.position.x = 50;
-    shape.position.y = 50;
-    shape.size.width = 150;
-    shape.size.height = 100;
-    shape.shape = ShapeTypes::RECTANGLE;
-    shape.points = {
-        Vector2{0,0},
-        Vector2{25,0},
-        Vector2{63,25},
-        Vector2{12,52}
+    Shape* m = CreateButton(50, 50, "Hello world");
+    m->OnClick = [&m](int x, int y) {
+        m->fillColor=blue;
     };
-    shape.draggable = true;
-
-    
-    Shape newshape;
-    newshape.fillColor = Color(255, 255, 255, 255);  // White text
-    newshape.shape = ShapeTypes::LABEL;
-    newshape.value = "hello, world!";  // Set value BEFORE cache()
-    newshape.position.x = 200;
-    newshape.position.y = 200;
-    newshape.draggable = true;
-    
-    // Cache after all properties are set
-    shape.cache();
-    newshape.cache();
-
-
-    shape.OnClick = [](int offX, int offY) {
-        std::cout << "click" << std::endl;
+    m->OnRelease = [&m](int x, int y) {
+        m->fillColor=red;
     };
-    shape.OnRelease = [](int offX, int offY) {
-        std::cout << "declick" << std::endl;
-    };
-    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, [&shape, &newshape]() {
-        if (shape.IsCollidingShape(&newshape)) {
-            shape.fillColor=red;
-        }else{
-            shape.fillColor=blue;
-        }
-        shape.position.x=Input::mouseX-shape.size.width/2;
-        shape.position.y=Input::mouseY-shape.size.height/2;
-        shape.cache(); //required in 99.9% of cases except rotation
-    });
     Core::Run();
 }
