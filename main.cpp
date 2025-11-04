@@ -33,6 +33,7 @@ Shape* CreateButton(int x, int y, std::string value) {
 int main() {
     
     Core::Init(800, 800, "test");
+    /*
     Shape* m = CreateButton(50, 50, "Hello world");
     Core::AssignMacro(Event::ON_TICK, [&m]() {
         m->transforms.rotation+=1;
@@ -49,5 +50,9 @@ int main() {
             m->children[0]->cache();
         }
     });
+    */
+    FileSystem::Init("example", "example");
+    FileSystem::IniParser example("example.ini");
+    example.load();
     Core::Run();
 }

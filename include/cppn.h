@@ -7,12 +7,15 @@
 #define SHOW_HITBOXES false
 #define GameName "Example Game"
 #define CompanyName "Company Name"
+#include "utils/string_utils.hpp"
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "graphics/graphics_core.hpp"
 #include "core/input_core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "filesystem/filesystem_core.hpp"
+#include "filesystem/filesystem_path.hpp"
+#include "filesystem/filesystem_ini.hpp"
 #pragma once
 
 
