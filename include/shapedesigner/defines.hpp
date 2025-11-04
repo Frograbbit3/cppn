@@ -70,6 +70,7 @@ namespace CPPN {
             std::vector<Vector2> points; // Optional list of points for polygons
 
             Shape* parent = nullptr; //only used if you want subgrouping
+            std::vector<Shape*> children; //only used for subgrouping
             ShapeTypes shape = ShapeTypes::RECTANGLE; 
             bool draggable = false;
             std::string value=""; //currently used for labels
@@ -85,14 +86,41 @@ namespace CPPN {
                 if (cached) { SDL_DestroyTexture(cached); cached = nullptr; }
                 if (cached_rect) { delete cached_rect; cached_rect = nullptr; }
             }
+
+            void AddChild(Shape *shape) {
+                if (std::find(children.begin(), children.end(), shape) != children.end()) {return;}
+                children.push_back(shape);
+                shape->parent = this;
+            }
+
+            void RemoveChild(Shape* shape) {
+                if (std::find(children.begin(), children.end(), shape) != children.end()) {
+                    children.erase(
+                        std::remove(children.begin(), children.end(), shape),
+                        children.end()
+                    );
+                    shape->parent=nullptr;
+                }
+            }
             void cache() {
                 if (this->cached) { SDL_DestroyTexture(this->cached); this->cached = nullptr; }
                 if (!this->cached_rect) this->cached_rect = new SDL_Rect{};
                 this->cached = ConvertShapeToTexture(this);
-                this->cached_rect->x = this->position.x;
-                this->cached_rect->y = this->position.y;
+                // Place the cached rect in world space. If there's a parent, treat this->position
+                // as relative to the parent's top-left and offset accordingly.
+                int absX = this->position.x;
+                int absY = this->position.y;
+                if (this->parent != nullptr) {
+                    absX += this->parent->position.x;
+                    absY += this->parent->position.y;
+                }
+                this->cached_rect->x = absX;
+                this->cached_rect->y = absY;
                 this->cached_rect->w = this->size.width;
                 this->cached_rect->h = this->size.height;
+                for (Shape *shp : children) {
+                    shp->cache();
+                }
             }
 
             bool IsCollidingShape(Shape* other, int step = 8) {

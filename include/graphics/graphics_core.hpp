@@ -112,53 +112,54 @@ namespace CPPN {
             @note No guarantees this will keep working if you call it manually. CPPN::Core::Run() will handle this.
         */
         void DrawShapes() {
-            // clear to black
+            // clear to background color
             if (renderer) {
-                SDL_SetRenderDrawColor(renderer, background.red,background.green,background.blue,background.alpha);
+                SDL_SetRenderDrawColor(renderer, background.red, background.green, background.blue, background.alpha);
                 SDL_RenderClear(renderer);
             }
 
             for (CPPN::ShapeDesigner::Shape* shape : shapes) {
+                // ensure texture and destination rect are up to date
                 shape->cache();
+
                 if (SHOW_HITBOXES) {
-                    
                     SDL_Rect rect;
                     rect.x = shape->cached_rect->x;
                     rect.y = shape->cached_rect->y;
                     rect.w = shape->cached_rect->w;
                     rect.h = shape->cached_rect->h;
-                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 128);  // RGB green + alpha
+                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 128);
                     SDL_RenderFillRect(renderer, &rect);
-                    SDL_SetRenderDrawColor(renderer, 0,0,0,255);
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 }
-                //process drag
-                if (Input::mouse1down) {
 
-                    if (!draggingShape  && shape->IsColliding(Input::mouseX, Input::mouseY)) {
+                // process click/drag
+                if (Input::mouse1down) {
+                    if (!draggingShape && shape->IsColliding(Input::mouseX, Input::mouseY)) {
                         draggingShape = shape;
                         dragOffsetX = shape->position.x - Input::mouseX;
                         dragOffsetY = shape->position.y - Input::mouseY;
-                        if (draggingShape->OnClick) {
-                        shape->OnClick(dragOffsetX,dragOffsetY);
+                        if (shape->OnClick) {
+                            shape->OnClick(dragOffsetX, dragOffsetY);
                         }
                     }
                     if (draggingShape == shape && shape->draggable) {
                         shape->position.x = Input::mouseX + dragOffsetX;
                         shape->position.y = Input::mouseY + dragOffsetY;
-                        shape->cache(); 
+                        shape->cache();
                     }
                 } else {
                     if (draggingShape) {
                         if (draggingShape->OnRelease) {
                             draggingShape->OnRelease(dragOffsetX, dragOffsetY);
                         }
+                        draggingShape = nullptr;
                     }
-                    draggingShape = nullptr;
                 }
 
                 // draw full texture (srcrect=nullptr) at cached destination rect
                 SDL_RenderCopyEx(renderer, shape->cached, nullptr, shape->cached_rect, shape->transforms.rotation, NULL, SDL_FLIP_NONE);
-            } 
+            }
 
             if (renderer) SDL_RenderPresent(renderer);
         }
