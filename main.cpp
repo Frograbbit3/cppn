@@ -20,6 +20,8 @@ Shape* CreateButton(int x, int y, std::string value) {
     label->value = value;
     label->shape = ShapeTypes::LABEL;  
     background->AddChild(label);
+    background->draggable = true;
+    
 
     background->cache();
     // You may want to store 'label' somewhere or attach it to 'background' if your framework supports it.
@@ -35,5 +37,9 @@ int main() {
     m->OnRelease = [&m](int x, int y) {
         m->fillColor=red;
     };
+
+    Core::AssignMacro(Event::ON_TICK, [&m]() {
+        m->transforms.rotation+=5;
+    });
     Core::Run();
 }

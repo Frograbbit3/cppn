@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include "../core/input_core.hpp"
 #include "../core/macros.hpp"
 #include "../core/core.hpp"
@@ -158,7 +159,32 @@ namespace CPPN {
                 }
 
                 // draw full texture (srcrect=nullptr) at cached destination rect
-                SDL_RenderCopyEx(renderer, shape->cached, nullptr, shape->cached_rect, shape->transforms.rotation, NULL, SDL_FLIP_NONE);
+                // Compose simple parent->child transforms for rotation around parent center if a parent exists.
+                SDL_Rect dst = *shape->cached_rect; // start from cached absolute rect (translation applied in cache)
+
+                double angle = static_cast<double>(shape->transforms.rotation);
+                if (shape->parent) {
+                    const double parentCx = shape->parent->position.x + shape->parent->size.width * 0.5;
+                    const double parentCy = shape->parent->position.y + shape->parent->size.height * 0.5;
+                    const double childLocalCx = shape->position.x + shape->size.width * 0.5;
+                    const double childLocalCy = shape->position.y + shape->size.height * 0.5;
+                    double vx = childLocalCx - shape->parent->size.width * 0.5;
+                    double vy = childLocalCy - shape->parent->size.height * 0.5;
+                    const double rad = shape->parent->transforms.rotation * M_PI / 180.0;
+                    const double cs = std::cos(rad);
+                    const double sn = std::sin(rad);
+                    const double rx = cs * vx - sn * vy;
+                    const double ry = sn * vx + cs * vy;
+                    const double worldCx = parentCx + rx;
+                    const double worldCy = parentCy + ry;
+                    dst.x = static_cast<int>(std::round(worldCx - dst.w * 0.5));
+                    dst.y = static_cast<int>(std::round(worldCy - dst.h * 0.5));
+                    angle += shape->parent->transforms.rotation;
+                }
+
+                // Rotate around the shape's own center in its dst rect
+                SDL_Point pivot { dst.w / 2, dst.h / 2 };
+                SDL_RenderCopyEx(renderer, shape->cached, nullptr, &dst, angle, &pivot, SDL_FLIP_NONE);
             }
 
             if (renderer) SDL_RenderPresent(renderer);
