@@ -14,6 +14,11 @@ namespace CPPN { namespace Math {
     bool IsInPolygon(int x, int y, const std::vector<CPPN::ShapeDesigner::Vector2>& pts) noexcept;
     constexpr inline bool IsInCircle(int x, int y, int radius) noexcept;
     constexpr inline bool IsInOval(int x, int y, int width, int height) noexcept;
+    // Forward declare with fully-qualified types to avoid dependent-name issues
+    constexpr inline CPPN::ShapeDesigner::Vector2 RotatePoint(
+        const CPPN::ShapeDesigner::Vector2& point,
+        const CPPN::ShapeDesigner::Vector2& origin,
+        double angle);
 } }
 using CPPN::Graphics::Color;
 // Use the same format as the surface creation to ensure consistency
@@ -164,8 +169,18 @@ namespace CPPN {
                 if (this->size.width <= 0 || this->size.height <= 0) return false;
 
                 // Convert point to local coordinates and AABB check via Math helper
-                const int lx = x - this->position.x;
-                const int ly = y - this->position.y;
+                Vector2 point = { x, y };
+                    Vector2 origin = {
+                        this->position.x + this->size.width / 2.0f,
+                        this->position.y + this->size.height / 2.0f
+                    };
+
+                // If rotated, rotate point backwards around the origin
+                if (this->transforms.rotation != 0.0f)
+                    point = CPPN::Math::RotatePoint(point, origin, -this->transforms.rotation * (M_PI / 180.0));
+
+                const int lx = point.x - position.x;
+                const int ly = point.y - position.y;
                 if (!CPPN::Math::IsInRect(lx, ly, this->size.width, this->size.height)) return false;
 
                 switch (this->shape) {

@@ -31,15 +31,13 @@ int main() {
     
     Core::Init(800, 800, "test");
     Shape* m = CreateButton(50, 50, "Hello world");
-    m->OnClick = [&m](int x, int y) {
-        m->fillColor=blue;
-    };
-    m->OnRelease = [&m](int x, int y) {
-        m->fillColor=red;
-    };
-
     Core::AssignMacro(Event::ON_TICK, [&m]() {
         m->transforms.rotation+=5;
+        if (m->IsColliding(Input::mouseX, Input::mouseY)) {
+            m->fillColor=blue;
+        }else{
+            m->fillColor=red;
+        }
     });
     Core::Run();
 }

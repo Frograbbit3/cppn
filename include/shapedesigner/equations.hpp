@@ -75,7 +75,18 @@ namespace CPPN {
             return (dx * dx * b * b + dy * dy * a * a) <= (a * a * b * b);
         }
 
-
+        constexpr inline CPPN::ShapeDesigner::Vector2 RotatePoint(
+            const CPPN::ShapeDesigner::Vector2& point,
+            const CPPN::ShapeDesigner::Vector2& origin,
+            double angle) {
+            const double s = std::sin(angle);
+            const double c = std::cos(angle);
+            double x = static_cast<double>(point.x) - static_cast<double>(origin.x);
+            double y = static_cast<double>(point.y) - static_cast<double>(origin.y);
+            double xnew = x * c - y * s;
+            double ynew = x * s + y * c;
+            return { static_cast<int>(std::round(xnew + origin.x)), static_cast<int>(std::round(ynew + origin.y)) };
+        }
     }
 }
 
