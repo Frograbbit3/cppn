@@ -7,7 +7,7 @@
 #define SHOW_HITBOXES false
 #define GameName "Example Game"
 #define CompanyName "Company Name"
-#include "utils/string_utils.hpp"
+#include "utils/utils.h"
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
 #include "graphics/graphics_core.hpp"

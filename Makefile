@@ -57,12 +57,15 @@ main-web:
 	@echo "✅ Web build complete -> $(OUT_DIR)/web/index.html"
 
 
-new:
+clean:
 	@rm -rf bin
 	@rm -rf assets
 	@mkdir -p assets
 	@mkdir -p assets/info
-	@read -p "Enter project name>" PROJECT_NAME;
-	@read -p "Enter company name>"
-	@echo "$$PROJECT_NAME" >> assets/info/NAME
 	@echo "Cleaned!"
+
+quick: CXXFLAGS := -std=c++17 -O0 -pipe -w -Iinclude -DNDEBUG
+quick:
+	@echo "⚡ Quick compile mode (fastest build, slow binary)..."
+	@$(MAKE) main CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
+	@bin/main.o

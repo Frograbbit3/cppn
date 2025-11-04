@@ -53,6 +53,14 @@ int main() {
     */
     FileSystem::Init("example", "example");
     FileSystem::IniParser example("example.ini");
-    example.load();
+    FileSystem::SaveData save;
+    Core::AssignMacro(Event::ON_READY, [&example, &save]() {
+        example.set("General", "LogFile", "/fake/new/location");
+        save.set("General", "LogFile", "/fake/new/location");
+        std::cout << "The log file is now located at " << example.get<std::string>("General", "LogFile") << std::endl;
+        example.save();
+        FileSystem::WriteSaveFile("save.txt", save);
+    });
+    
     Core::Run();
 }

@@ -19,6 +19,7 @@ namespace CPPN
 
         bool paused = false;
         bool init = false;
+        bool run_on_ready = true;
 
         /*
             The main init function. Use this to create the window.
@@ -44,6 +45,10 @@ namespace CPPN
         */
         bool Tick()
         {
+            if (run_on_ready) {
+                CPPN::Core::CallMacro(CPPN::Enums::Event::ON_READY);
+                run_on_ready=false;
+            }
             CPPN::Graphics::TickWindow();
             if (CPPN::Private::EventLoop() == false)
             {

@@ -11,7 +11,8 @@ namespace CPPN {
             ON_MOUSE_RELEASE=5,
             ON_KEY_PRESS=6,
             ON_KEY_RELEASE=7,
-            ON_KEY_HOLD=8
+            ON_KEY_HOLD=8,
+            ON_READY=9
         };
     }
     namespace Widgets {

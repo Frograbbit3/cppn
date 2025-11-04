@@ -280,6 +280,8 @@ namespace CPPN {
                 }
 
             public:
+                
+                ///@deprecated This format is pickier & less reliable then just using the modern IniParser. Just use that. This is here purely because I don't feel like removing it.
                 SaveData() {
 
                 }
@@ -295,7 +297,7 @@ namespace CPPN {
                     auto& entries = data[category];
                     for (auto& [k, v] : entries) {
                         if (k == key) {
-                            v = value;
+                            v = CPPN::Utils::to_string(value);
                             return;
                         }
                     }

@@ -26,14 +26,12 @@ namespace CPPN {
                 if (e.type == SDL_KEYDOWN) {
                     SDL_Keycode key = e.key.keysym.sym;
                     std::string keyName(SDL_GetKeyName(key));
-                    std::cout << "key down: " << keyName << std::endl;
                     CPPN::Input::KeyDown(keyName);
                     CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_PRESS);
                 }
                 if (e.type == SDL_KEYUP) {
                     SDL_Keycode key = e.key.keysym.sym;
                     std::string keyName(SDL_GetKeyName(key));
-                    std::cout << "key up: " << keyName << std::endl;
                     CPPN::Input::KeyUp(keyName);
                     CPPN::Core::CallMacro(CPPN::Enums::Event::ON_KEY_RELEASE);
                 }
