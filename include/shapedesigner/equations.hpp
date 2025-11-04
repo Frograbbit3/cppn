@@ -87,6 +87,41 @@ namespace CPPN {
             double ynew = x * s + y * c;
             return { static_cast<int>(std::round(xnew + origin.x)), static_cast<int>(std::round(ynew + origin.y)) };
         }
+        constexpr inline CPPN::ShapeDesigner::Vector2 ComputeWorldCenter(
+            const CPPN::ShapeDesigner::Shape* shape) {
+            if (!shape->parent) {
+                return {
+                    static_cast<int>(std::round(shape->position.x + shape->size.width * 0.5)),
+                    static_cast<int>(std::round(shape->position.y + shape->size.height * 0.5))
+                };
+            }
+
+            // parent center (world)
+            const double parentCx = static_cast<double>(shape->parent->position.x) + shape->parent->size.width * 0.5;
+            const double parentCy = static_cast<double>(shape->parent->position.y) + shape->parent->size.height * 0.5;
+
+            // child local center relative to parent's local space
+            const double childLocalCx = static_cast<double>(shape->position.x) + shape->size.width * 0.5;
+            const double childLocalCy = static_cast<double>(shape->position.y) + shape->size.height * 0.5;
+
+            // offset from parent's center
+            double vx = childLocalCx - shape->parent->size.width * 0.5;
+            double vy = childLocalCy - shape->parent->size.height * 0.5;
+
+            // rotate by parent's rotation
+            const double rad = shape->parent->transforms.rotation * M_PI / 180.0;
+            const double cs = std::cos(rad);
+            const double sn = std::sin(rad);
+            const double rx = cs * vx - sn * vy;
+            const double ry = sn * vx + cs * vy;
+
+            // combine
+            return {
+                static_cast<int>(std::round(parentCx + rx)),
+                static_cast<int>(std::round(parentCy + ry))
+            };
+        }
+
     }
 }
 

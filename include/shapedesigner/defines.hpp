@@ -19,6 +19,8 @@ namespace CPPN { namespace Math {
         const CPPN::ShapeDesigner::Vector2& point,
         const CPPN::ShapeDesigner::Vector2& origin,
         double angle);
+    constexpr inline CPPN::ShapeDesigner::Vector2 ComputeWorldCenter(
+        const CPPN::ShapeDesigner::Shape* shape);
 } }
 using CPPN::Graphics::Color;
 // Use the same format as the surface creation to ensure consistency
@@ -156,7 +158,7 @@ namespace CPPN {
                     for (int x = sx; x < ex; x += step) {
                         if (this->IsColliding(x, y) && other->IsColliding(x, y)) {
                             return true;
-                        }
+                        };
                     }
                 }
 
@@ -164,48 +166,41 @@ namespace CPPN {
                 if (this->IsColliding(ex - 1, ey - 1) && other->IsColliding(ex - 1, ey - 1)) return true;
                 return false;
             }
+                bool IsColliding(int x, int y) {
+                    if (size.width <= 0 || size.height <= 0) return false;
 
-            bool IsColliding(int x, int y) {
-                if (this->size.width <= 0 || this->size.height <= 0) return false;
+                    Vector2 worldCenter = CPPN::Math::ComputeWorldCenter(this);
+                    Vector2 point = { x, y };
 
-                // Convert point to local coordinates and AABB check via Math helper
-                Vector2 point = { x, y };
-                    Vector2 origin = {
-                        this->position.x + this->size.width / 2.0f,
-                        this->position.y + this->size.height / 2.0f
-                    };
+                    // rotate the point backward around worldCenter by total rotation
+                    float totalRotation = transforms.rotation;
+                    if (parent)
+                        totalRotation += parent->transforms.rotation;
 
-                // If rotated, rotate point backwards around the origin
-                if (this->transforms.rotation != 0.0f)
-                    point = CPPN::Math::RotatePoint(point, origin, -this->transforms.rotation * (M_PI / 180.0));
+                    point = CPPN::Math::RotatePoint(point, worldCenter, -totalRotation * (M_PI / 180.0));
 
-                const int lx = point.x - position.x;
-                const int ly = point.y - position.y;
-                if (!CPPN::Math::IsInRect(lx, ly, this->size.width, this->size.height)) return false;
-
-                switch (this->shape) {
-                    case ShapeTypes::RECTANGLE:
-                        return true; // AABB hit
-                    case ShapeTypes::CIRCLE:
-                        return CPPN::Math::IsInCircle(lx, ly, this->size.radius());
-                    case ShapeTypes::OVAL:
-                        return CPPN::Math::IsInOval(lx, ly, this->size.width, this->size.height);
-                    case ShapeTypes::POLYGON:
-                        if (this->points.empty()) return false;
-                        return CPPN::Math::IsInPolygon(lx, ly, this->points);
-                    case ShapeTypes::LINE:
+                    // then normal local check
+                    int lx = point.x - (worldCenter.x - size.width / 2);
+                    int ly = point.y - (worldCenter.y - size.height / 2);
+                    if (!CPPN::Math::IsInRect(lx, ly, size.width, size.height))
                         return false;
-                    case ShapeTypes::POLYLINE:
-                        // TODO: implement distance-to-segment hit test
-                        return false;
-                    //just does AABB it sucks lol
-                    case ShapeTypes::LABEL:
-                        return true;
-                        
-                    default:
-                        return false;
-                }
-            }
-         };
+
+                    switch (shape) {
+                        case ShapeTypes::RECTANGLE:
+                            return true;
+                        case ShapeTypes::CIRCLE:
+                            return CPPN::Math::IsInCircle(lx, ly, size.radius());
+                        case ShapeTypes::OVAL:
+                            return CPPN::Math::IsInOval(lx, ly, size.width, size.height);
+                        case ShapeTypes::POLYGON:
+                            if (points.empty()) return false;
+                            return CPPN::Math::IsInPolygon(lx, ly, points);
+                        case ShapeTypes::LABEL:
+                            return true;
+                        default:
+                            return false;
+                    }
+                };
+            };
     }
 }

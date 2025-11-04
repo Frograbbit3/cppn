@@ -18,7 +18,8 @@ Shape* CreateButton(int x, int y, std::string value) {
     Shape* label = new Shape();
     label->fillColor = {255,255,255,255};
     label->value = value;
-    label->shape = ShapeTypes::LABEL;  
+    label->size = {50, 50};
+    label->shape = ShapeTypes::OVAL;  
     background->AddChild(label);
     background->draggable = true;
     
@@ -32,11 +33,18 @@ int main() {
     Core::Init(800, 800, "test");
     Shape* m = CreateButton(50, 50, "Hello world");
     Core::AssignMacro(Event::ON_TICK, [&m]() {
-        m->transforms.rotation+=5;
+        m->transforms.rotation+=1;
         if (m->IsColliding(Input::mouseX, Input::mouseY)) {
             m->fillColor=blue;
         }else{
             m->fillColor=red;
+        }
+        if (m->children[0]->IsColliding(Input::mouseX, Input::mouseY)) {
+            m->children[0]->fillColor=red;
+            m->children[0]->cache();
+        }else{
+            m->children[0]->fillColor=blue;
+            m->children[0]->cache();
         }
     });
     Core::Run();
