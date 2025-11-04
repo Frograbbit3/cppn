@@ -17,15 +17,21 @@ namespace CPPN {
             bool exists=true;
                         //Creates a new Path object.
             Path(const std::string& path): rel_path(path) {
-                rel_path = std::string(path);
-                if (!IsAbsolutePath(rel_path)) {
-                    value = AbsoluteResourcePath(rel_path);
-                    if (!FileExists(value)) {
-                        value = AbsoluteSavesPath(rel_path);
-                        if (!FileExists(value)) {
-                            value = rel_path;
-                            exists=false;
-                        }
+                if (IsAbsolutePath(path)) {
+                    // Already absolute - use as-is
+                    value = path;
+                    FILE* f = fopen(value.c_str(), "r");
+                    exists = (f != nullptr);
+                    if (f) fclose(f);
+                } else {
+                    // Try resource path first
+                    value = AbsoluteResourcePath(path);
+                    if (FileExists(value)) {
+                        exists = true;
+                    } else {
+                        // Try save path
+                        value = AbsoluteSavesPath(path);
+                        exists = FileExists(value);
                     }
                 }
             }

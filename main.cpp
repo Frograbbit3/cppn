@@ -33,34 +33,46 @@ Shape* CreateButton(int x, int y, std::string value) {
 int main() {
     
     Core::Init(800, 800, "test");
-    /*
-    Shape* m = CreateButton(50, 50, "Hello world");
-    Core::AssignMacro(Event::ON_TICK, [&m]() {
-        m->transforms.rotation+=1;
-        if (m->IsColliding(Input::mouseX, Input::mouseY)) {
-            m->fillColor=blue;
-        }else{
-            m->fillColor=red;
-        }
-        m->cache();
-        if (m->children[0]->IsColliding(Input::mouseX, Input::mouseY)) {
-            m->children[0]->fillColor=red;
-        }else{
-            m->children[0]->fillColor=blue;
-            m->children[0]->cache();
-        }
-    });
-    */
+
     FileSystem::Init("example", "example");
     FileSystem::IniParser example("example.ini");
     FileSystem::SaveData save;
-    Core::AssignMacro(Event::ON_READY, [&example, &save]() {
-        example.set("General", "LogFile", "/fake/new/location");
-        save.set("General", "LogFile", "/fake/new/location");
-        std::cout << "The log file is now located at " << example.get<std::string>("General", "LogFile") << std::endl;
-        example.save();
-        FileSystem::WriteSaveFile("save.txt", save);
+    Shape* m = CreateButton(50, 50, "Hello world");
+    
+    Core::AssignMacro(Event::ON_READY, [&example, &save, &m]() {
+        example.load();
+        if (!example.exists("Rect1", "PositionX")) {
+            std::cout << "loaded defaults" << std::endl;
+            example.set("Rect1", "PositionX", 0);
+            example.set("Rect1", "PositionY", 0);
+            example.set("Rect1", "Rotation", 0.0);
+        }
+    
+        m->position.x = example.get<int>("Rect1", "PositionX");
+        m->position.y = example.get<int>("Rect1", "PositionY");
+        m->transforms.rotation=example.get<double>("Rect1", "Rotation");
+        m->cache();
+        example.set("General", "Name", "example");
+        //example.save();
     });
+    
+    Core::AssignMacro(Event::ON_MOUSE_CLICK, [&m, &example]() {
+        example.set("Rect1", "PositionX", m->position.x);
+        example.set("Rect1", "PositionY", m->position.y);
+        example.set("Rect1", "Rotation", m->transforms.rotation);
+        example.save();
+        std::cout << "saved!" << std::endl;
+    });
+
+    Core::AssignMacro(Event::ON_KEY_HOLD, [&m]() {
+        if (Input::keysPressed.find("D") != Input::keysPressed.end()) {
+            m->transforms.rotation+=5;
+            m->cache();
+        }
+    });
+
+
+
     
     Core::Run();
 }

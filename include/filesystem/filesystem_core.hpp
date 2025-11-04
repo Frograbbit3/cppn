@@ -93,10 +93,19 @@ namespace CPPN {
             @param path The path to check.
         */
         bool IsAbsolutePath(const std::string& path) {
-            if (path.compare(0, RESOURCE_PATH.size(), RESOURCE_PATH) == 0 ||
-                path.compare(0, SAVE_PATH.size(), SAVE_PATH) == 0) {
-                return true;
-            }
+            if (path.empty()) return false;
+            
+            // Check if it starts with '/' on Unix or drive letter on Windows
+            #ifdef _WIN32
+                if (path.size() >= 2 && path[1] == ':') return true;
+            #else
+                if (path[0] == '/') return true;
+            #endif
+            
+            // Also check if it matches our known paths
+            if (!RESOURCE_PATH.empty() && path.compare(0, RESOURCE_PATH.size(), RESOURCE_PATH) == 0) return true;
+            if (!SAVE_PATH.empty() && path.compare(0, SAVE_PATH.size(), SAVE_PATH) == 0) return true;
+            
             return false;
         }
         /*

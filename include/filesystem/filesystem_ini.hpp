@@ -70,14 +70,27 @@ namespace CPPN {
                     return newData;
                 }
             public:
-                IniParser(std::string path) : location(path) {}
+                IniParser(std::string path)
+                    : location(AbsoluteSavesPath(path)) {
+                        std::cout << AbsoluteSavesPath(path) << std::endl;
+                }
                 void load() {
-                    if (!location.exists) {throw std::runtime_error("Please do not call .load on an uncreated file!");}
+                    std::cout << "time to die" << std::endl;
                     contents = location.open();
                     load_ini();
                     loaded = true;
                 }
 
+                bool exists(const std::string& category, const std::string &key) {
+                    if (data.find(category) != data.end()) {
+                        for (std::pair<std::string, std::string> &value : data[category]) {
+                            if (value.first == key) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
                 template <typename T>
                 T get(const std::string& category, const std::string& key) {
                     if (data.find(category) != data.end()) {
