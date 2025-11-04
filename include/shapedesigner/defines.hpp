@@ -51,7 +51,8 @@ namespace CPPN {
             LINE=3,
             POLYLINE=4,
             POLYGON=5,
-            LABEL=6
+            LABEL=6,
+            IMAGE=7
         };
 
 
@@ -110,9 +111,10 @@ namespace CPPN {
                 }
             }
             void cache() {
-                if (this->cached) { SDL_DestroyTexture(this->cached); this->cached = nullptr; }
-                if (!this->cached_rect) this->cached_rect = new SDL_Rect{};
-                this->cached = ConvertShapeToTexture(this);
+
+                if (this->shape!=ShapeTypes::IMAGE&&this->cached){SDL_DestroyTexture(this->cached); this->cached = nullptr;}
+                if(!this->cached) {this->cached = ConvertShapeToTexture(this);}
+                if (!this->cached_rect){this->cached_rect = new SDL_Rect{};} 
                 // Place the cached rect in world space. If there's a parent, treat this->position
                 // as relative to the parent's top-left and offset accordingly.
                 int absX = this->position.x;

@@ -25,6 +25,8 @@ namespace CPPN {
                 case (ShapeTypes::LABEL):
                     return GenerateLabel(shape);
                     break;
+                case (ShapeTypes::IMAGE):
+                    return GenerateTexture(shape);
             }
             return nullptr;
         }

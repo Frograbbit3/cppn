@@ -121,7 +121,7 @@ namespace CPPN {
 
             for (CPPN::ShapeDesigner::Shape* shape : shapes) {
                 // ensure texture and destination rect are up to date
-                shape->cache();
+              //  shape->cache();
 
                 if (SHOW_HITBOXES) {
                     SDL_Rect rect;

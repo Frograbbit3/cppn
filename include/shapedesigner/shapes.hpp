@@ -1,8 +1,10 @@
 #include <SDL2/SDL.h>
+#define STB_IMAGE_IMPLEMENTATION
 #include "equations.hpp"
 #include "defines.hpp"
 #include "filesystem/filesystem_core.hpp"
 #include "../ttfs/text.hpp"
+#include <graphics/stb_image.h>
 CPPN::FontSystem::Font* font = nullptr;
 namespace CPPN {
     namespace ShapeDesigner {
@@ -107,6 +109,22 @@ namespace CPPN {
             return ConvertPixelMapToTexture(pixels, di, di);
         }
 
+        SDL_Texture* GenerateTexture(Shape* shape) {
+            const std::string& path = shape->value;
+            int w, h, channels;
+            unsigned char* pixels = stbi_load(CPPN::FileSystem::AbsoluteResourcePath(path).c_str(), &w, &h, &channels, STBI_rgb_alpha);
+            if (!pixels) {
+                SDL_Log("Failed to load %s: %s", path.c_str(), stbi_failure_reason());
+                return nullptr;
+            }
+            SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(
+                pixels, w, h, 32, w * 4, SDL_PIXELFORMAT_RGBA32
+            );
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(CPPN::Graphics::renderer, surface);
+            SDL_FreeSurface(surface);
+            stbi_image_free(pixels);
+            return texture;
+        }
         
         SDL_Texture* GenerateRect(Shape* shape) {
             int width = shape->size.width;

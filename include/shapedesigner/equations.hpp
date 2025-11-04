@@ -87,6 +87,8 @@ namespace CPPN {
             double ynew = x * s + y * c;
             return { static_cast<int>(std::round(xnew + origin.x)), static_cast<int>(std::round(ynew + origin.y)) };
         }
+
+        
         constexpr inline CPPN::ShapeDesigner::Vector2 ComputeWorldCenter(
             const CPPN::ShapeDesigner::Shape* shape) {
             if (!shape->parent) {

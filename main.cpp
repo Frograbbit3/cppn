@@ -19,7 +19,8 @@ Shape* CreateButton(int x, int y, std::string value) {
     label->fillColor = {255,255,255,255};
     label->value = value;
     label->size = {50, 50};
-    label->shape = ShapeTypes::OVAL;  
+    label->shape = ShapeTypes::IMAGE;
+    label->value = "file.png";  
     background->AddChild(label);
     background->draggable = true;
     
@@ -41,7 +42,6 @@ int main() {
         }
         if (m->children[0]->IsColliding(Input::mouseX, Input::mouseY)) {
             m->children[0]->fillColor=red;
-            m->children[0]->cache();
         }else{
             m->children[0]->fillColor=blue;
             m->children[0]->cache();
