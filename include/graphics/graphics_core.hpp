@@ -1,6 +1,5 @@
 #pragma once
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -51,10 +50,6 @@ namespace CPPN {
             WindowInit = true;
 
             // initialize SDL_image for common formats (PNG, JPG)
-            int imgFlags = IMG_INIT_PNG;
-            if ((IMG_Init(imgFlags) & imgFlags) != imgFlags) {
-                std::cerr << "IMG_Init failed: " << IMG_GetError() << std::endl;
-            }
         }
 
         /*
@@ -65,28 +60,9 @@ namespace CPPN {
                 SDL_DestroyWindow(window);
                 SDL_DestroyRenderer(renderer);
                 // quit SDL_image first
-                IMG_Quit();
                 // quit SDL_ttf
                 SDL_Quit();
             }
-        }
-
-        /*
-            @private
-            Loads an image into an SDL_Texture. Designed for private use, but can return an SDL_Texture from a file.
-
-            @note Unlike the filesystem, this will not automatically get the resources directory. For consistent use across platforms, use the FileSystem's AbsoluteSavesPath().
-        */
-        SDL_Texture* LoadImage(const std::string &img) {
-            if (!WindowInit || renderer==nullptr) {
-                std::cerr << "LoadImage: Renderer/window not initialized" << std::endl;
-                return nullptr;
-            }
-            SDL_Texture* tex = IMG_LoadTexture(renderer, img.c_str());
-            if (!tex) {
-                std::cerr << "IMG_LoadTexture failed for '" << img << "': " << IMG_GetError() << std::endl;
-            }
-            return tex;
         }
 
         /*

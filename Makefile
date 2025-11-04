@@ -4,7 +4,7 @@
 
 CXX ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -Iinclude
-LDFLAGS ?= -lz -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
+LDFLAGS ?= -lz -lSDL2 -lSDL2main
 OUT_DIR := bin
 SRC := main.cpp
 
@@ -39,15 +39,30 @@ run: main
 main-web:
 	@rm -rf bin
 	@mkdir -p $(OUT_DIR)/web
+	# Ensure assets directory exists and has at least one file so file_packager doesn't fail
+	@mkdir -p assets
+	@if [ -z "$$(ls -A assets 2>/dev/null)" ]; then \
+		echo "CPPN - BLANK FILE" > assets/VERSION.txt; \
+		echo "(main-web) No assets found, created assets/VERSION.txt placeholder"; \
+	fi
 	@echo "🌐 Building WebAssembly target..."
 	@EM_CACHE=$(HOME)/.emscripten_cache \
 	FROZEN_CACHE=0 \
 	em++ main.cpp -Iinclude -o bin/web/index.html $(CXXFLAGS) \
 		-s USE_SDL=2 \
-		-s USE_SDL_IMAGE=2 \
-		-s SDL2_IMAGE_FORMATS='["png"]' \
 		--preload-file assets@/ \
 		-sASSERTIONS \
 		-O2
 
 	@echo "✅ Web build complete -> $(OUT_DIR)/web/index.html"
+
+
+new:
+	@rm -rf bin
+	@rm -rf assets
+	@mkdir -p assets
+	@mkdir -p assets/info
+	@read -p "Enter project name>" PROJECT_NAME;
+	@read -p "Enter company name>"
+	@echo "$$PROJECT_NAME" >> assets/info/NAME
+	@echo "Cleaned!"

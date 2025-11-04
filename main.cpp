@@ -13,14 +13,15 @@ Shape* CreateButton(int x, int y, std::string value) {
     background->fillColor = red;
     background->position = {x,y};
     background->size = {300, 75};
-    background->shape = ShapeTypes::RECTANGLE;
+    background->shape = ShapeTypes::OVAL;
+    background->points = {{20, 400}, {40, 600}, {20,200}};
 
     Shape* label = new Shape();
     label->fillColor = {255,255,255,255};
     label->value = value;
-    label->size = {50, 50};
-    label->shape = ShapeTypes::IMAGE;
-    label->value = "file.png";  
+    label->size = {500, 500};
+    label->shape = ShapeTypes::LABEL;
+    label->value = value;  
     background->AddChild(label);
     background->draggable = true;
     
@@ -40,6 +41,7 @@ int main() {
         }else{
             m->fillColor=red;
         }
+        m->cache();
         if (m->children[0]->IsColliding(Input::mouseX, Input::mouseY)) {
             m->children[0]->fillColor=red;
         }else{
