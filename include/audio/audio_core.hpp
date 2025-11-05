@@ -150,12 +150,26 @@ namespace CPPN::Audio {
         }
     };
     inline void Tick() {
-        float buffer[BUFFER];
-        for (auto& m : sounds){
-            m->tick(buffer);
-            SDL_QueueAudio(device, buffer, BUFFER * sizeof(float));
+        if (!device) return;
+
+        float buffer[BUFFER] = {0.0f};
+        float temp[BUFFER];
+
+        // 1️⃣ Sum all playing sounds
+        for (auto& m : sounds) {
+            if (!m->playing) continue;
+            m->tick(temp);
+            for (int i = 0; i < BUFFER; ++i)
+                buffer[i] += temp[i];
         }
-        
+
+        // 2️⃣ Soft-clip (gentle limiter)
+        for (int i = 0; i < BUFFER; ++i)
+            buffer[i] = buffer[i] / (1.0f + fabsf(buffer[i]));
+
+        // 3️⃣ Send to SDL
+        SDL_QueueAudio(device, buffer, BUFFER * sizeof(float));
     }
+
 
 }
