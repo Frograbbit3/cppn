@@ -48,7 +48,7 @@ namespace CPPN {
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             }
             WindowInit = true;
-
+            SDL_Init(SDL_INIT_AUDIO);
             // initialize SDL_image for common formats (PNG, JPG)
         }
 
@@ -99,7 +99,7 @@ namespace CPPN {
                 // ensure texture and destination rect are up to date
               //  shape->cache();
 
-                if (SHOW_HITBOXES) {
+                #ifdef SHOW_HITBOXES
                     SDL_Rect rect;
                     rect.x = shape->cached_rect->x;
                     rect.y = shape->cached_rect->y;
@@ -108,7 +108,7 @@ namespace CPPN {
                     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 128);
                     SDL_RenderFillRect(renderer, &rect);
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                }
+                #endif
 
                 // process click/drag
                 if (Input::mouse1down) {

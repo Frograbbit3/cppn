@@ -72,7 +72,11 @@ namespace CPPN {
             return result;
         }
 
+        std::string ExtractFileExt(std::string file) {
+            if (file.find(".") == std::string::npos) {throw std::runtime_error("No file extension found!");}
+            return file.substr(file.find("."),file.size());
 
+        }
         /*
             Will take a relative path (so file.txt) and convert it to an absolute path to the assets based on the system (/app/file.txt)
             @param rel The relative path.

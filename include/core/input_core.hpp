@@ -1,5 +1,6 @@
 #pragma once
 #include "unordered_set"
+#include <string>
 namespace CPPN {
     namespace Input {
         int mouseX = 0;

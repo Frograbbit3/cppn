@@ -4,9 +4,6 @@
 #define FMT_HEADER_ONLY
 
 //config
-#define SHOW_HITBOXES false
-#define GameName "Example Game"
-#define CompanyName "Company Name"
 #include "utils/utils.h"
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"
