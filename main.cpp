@@ -13,7 +13,7 @@ Shape* CreateButton(int x, int y, std::string value) {
     background->fillColor = red;
     background->position = {x,y};
     background->size = {300, 75};
-    background->shape = ShapeTypes::OVAL;
+    background->shape = ShapeTypes::RECTANGLE;
     background->points = {{20, 400}, {40, 600}, {20,200}};
 
     Shape* label = new Shape();
@@ -42,17 +42,22 @@ int main() {
     Core::AssignMacro(Event::ON_READY, [&example, &save, &m]() {
         example.load();
         if (!example.exists("Rect1", "PositionX")) {
+            std::string name;
+            std::cout << "What's your name? ";
+            std::cin >> name;
+            example.set("General", "Name", name);
             std::cout << "loaded defaults" << std::endl;
             example.set("Rect1", "PositionX", 0);
             example.set("Rect1", "PositionY", 0);
             example.set("Rect1", "Rotation", 0.0);
+            example.save();
         }
     
         m->position.x = example.get<int>("Rect1", "PositionX");
         m->position.y = example.get<int>("Rect1", "PositionY");
         m->transforms.rotation=example.get<double>("Rect1", "Rotation");
+        m->children[0]->value=example.get<std::string>("General", "Name");
         m->cache();
-        example.set("General", "Name", "example");
         //example.save();
     });
     

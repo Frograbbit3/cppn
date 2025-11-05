@@ -1,6 +1,6 @@
 #pragma once
 #include "filesystem_path.hpp"
-#include <unordered_map>
+#include <map>
 #include <sstream>
 #include "utils/utils.h"
 using namespace CPPN::Utils::StringUtils;
@@ -11,42 +11,51 @@ namespace CPPN {
             private:
                 Path location;
                 std::string contents;
-                std::unordered_map<std::string,std::vector<std::pair<std::string, std::string>>> data;
+                std::map<std::string,std::vector<std::pair<std::string, std::string>>> data;
                 std::string catagory;
                 std::string key;
+                size_t end;
+                std::string trimmed;
                 bool loaded = false;
                 void load_ini() {
                     std::istringstream stream(contents);
                     std::string line;
-
                     while (std::getline(stream, line)) {
-                        if (line[0] == ';' || line[0] == '#') {
-                            continue;
-                        }
-                        if (strip(line) == "") {
-                            continue;
-                        }
-                        line=lstrip(line);
-                        if (line[0] == '[') {
-                            size_t end = line.find(']');
-                            if (end != std::string::npos) {
-                                catagory = line.substr(1, end - 1);
-                            }
-                        }else{
-                            //assume key pair
-                            size_t end = line.find('=');
-                            std::string trimmed = rstrip(lstrip(line.substr(end+1, std::string::npos)));
-                            if (trimmed[0] == '"' || trimmed[0] == '\''){
-                                trimmed=trimmed.substr(1, trimmed.size()-2);
-                            }
-                            if (end != std::string::npos) {
-                                key = strip(line.substr(0, end-1));
-                                if (data.find(catagory) == data.end()) {
-                                    data[catagory] = {};
+                        switch (line[0]){
+                            case ';':
+                                continue;
+                            case '#':
+                                continue;
+                            case '[':
+                                line=lstrip(line);
+                                end = line.find(']');
+                                if (end != std::string::npos) {
+                                    if (end+1 < strip(line).size()) {
+                                        catagory = "";
+                                        continue;
+                                    }
+                                    
+                                    catagory = strip(line.substr(1, end-1));
                                 }
+                                break;
+                            default:
+                                if (catagory == "") {continue;}
+                                end = line.find('=');
+                                if (end == std::string::npos) continue;
+                                
+                                key = strip(line.substr(0, end));
+                                if (key == "") {continue;}
+                                trimmed = strip(line.substr(end+1));
+                                
+                                if (!trimmed.empty() && (trimmed[0] == '"' || trimmed[0] == '\'')){
+                                    if (trimmed.size() >= 2 && (trimmed.back() == '"' || trimmed.back() == '\'')){
+                                        trimmed = trimmed.substr(1, trimmed.size()-2);
+                                    }
+                                }
+                                
                                 data[catagory].emplace_back(key, trimmed);
-                            }
-
+                                break;                    
+                            
                         }
                     }
                 }
@@ -70,12 +79,10 @@ namespace CPPN {
                     return newData;
                 }
             public:
-                IniParser(std::string path)
-                    : location(AbsoluteSavesPath(path)) {
-                        std::cout << AbsoluteSavesPath(path) << std::endl;
-                }
+                IniParser(std::string path) : location(path) {}
+                        
                 void load() {
-                    std::cout << "time to die" << std::endl;
+                    if (!location.exists) {return;}
                     contents = location.open();
                     load_ini();
                     loaded = true;

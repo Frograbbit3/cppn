@@ -3,7 +3,7 @@
 # ===================================
 
 CXX ?= g++
-CXXFLAGS ?= -std=c++17 -O2 -Iinclude
+CXXFLAGS ?= -std=c++17 -O3 -Iinclude
 LDFLAGS ?= -lz -lSDL2 -lSDL2main
 OUT_DIR := bin
 SRC := main.cpp
