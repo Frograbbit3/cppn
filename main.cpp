@@ -12,10 +12,10 @@ int main() {
     Core::Init(800, 800, "example");
     FileSystem::Init("example", "example");
     Audio::Init();
-    Audio::Sound test("test.mp3");
-    Audio::Sound test2("test2.mp3");
-    test.play();
-    test2.play();
+    Audio::Sound jump("jump.mp3");
+    Core::AssignMacro(Event::ON_KEY_PRESS, [&jump]() {
+        jump.play();
+    });
 
     Core::Run();
 }
