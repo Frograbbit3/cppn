@@ -1,0 +1,17 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++17",
+      "-O3",
+      "-Iinclude",
+      "-o",
+      "bin/main.o",
+      "main.cpp"
+    ],
+    "directory": "/home/moakdoge/cppn",
+    "file": "/home/moakdoge/cppn/main.cpp",
+    "output": "/home/moakdoge/cppn/bin/main.o"
+  }
+]

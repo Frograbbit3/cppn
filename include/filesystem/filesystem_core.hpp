@@ -1,5 +1,7 @@
 #pragma once
 #include "SDL2/SDL_filesystem.h"
+#include "SDL2/SDL_rwops.h"
+#include "utils/other_utils.hpp"
 #include <SDL2/SDL_stdinc.h>
 #include <any>
 #include <cstddef>
@@ -112,49 +114,53 @@ namespace CPPN {
             Attempts to check if the file exists. Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
             @param path The path to check.
         */
+       
         bool FileExists(std::string path) {
             if (!IsAbsolutePath(path)) {
-                path=AbsoluteResourcePath(path);
+                path = AbsoluteResourcePath(path);
             }
-            FILE* f = fopen(path.c_str(), "r");
-            if(f) {
-                fclose(f);
+
+            SDL_RWops* rw = SDL_RWFromFile(path.c_str(), "r");
+            if (rw) {
+                SDL_RWclose(rw);
                 return true;
             }
             return false;
         }
 
-        
         /*
-            Attempts to read the file, returning text. Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
-            @param path The file location to read.
+            Attempts to read the file, returning text.
+            Works seamlessly on desktop, Android, and Web.
         */
         std::string OpenFileAsText(std::string path) {
             if (!FileExists(path)) {
                 throw std::runtime_error("File not found");
             }
             if (!IsAbsolutePath(path)) {
-                path=AbsoluteResourcePath(path);
+                path = AbsoluteResourcePath(path);
             }
-            std::string text;
-            FILE* file = fopen(path.c_str(), "r");
+
+            SDL_RWops* file = SDL_RWFromFile(path.c_str(), "r");
             if (!file) {
                 throw std::runtime_error("Unable to read file!");
             }
+
+            std::string text;
             char buffer[256];
-            while (fgets(buffer, sizeof(buffer), file)) {
+            size_t bytesRead = 0;
+            do {
+                bytesRead = SDL_RWread(file, buffer, 1, sizeof(buffer) - 1);
+                buffer[bytesRead] = '\0';
                 text += buffer;
-            }
+            } while (bytesRead > 0);
 
-            fclose(file);
+            SDL_RWclose(file);
             return text;
-
         }
-        
+
         /*
-            Reads a binary file and returns its contents as a string. For binary files like fonts, images, etc.
-            Unless an absolute path from `AbsoluteSavesPath` is provided, it will automatically check in RESOURCE_PATH.
-            @param path The file location to read.
+            Reads a binary file and returns its contents as a string.
+            Fully cross-platform — handles Android assets and preloaded web files.
         */
         std::string OpenFileAsBinary(std::string path) {
             if (!FileExists(path)) {
@@ -163,342 +169,51 @@ namespace CPPN {
             if (!IsAbsolutePath(path)) {
                 path = AbsoluteResourcePath(path);
             }
-            
-            FILE* file = fopen(path.c_str(), "rb");
+
+            SDL_RWops* file = SDL_RWFromFile(path.c_str(), "rb");
             if (!file) {
                 throw std::runtime_error("Unable to read file!");
             }
-            
-            // Get file size
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-            
+
+            Sint64 fileSize = SDL_RWsize(file);
             if (fileSize <= 0) {
-                fclose(file);
+                SDL_RWclose(file);
                 throw std::runtime_error("File is empty or invalid!");
             }
-            
-            // Read entire file into string
+
             std::string data;
-            data.resize(fileSize);
-            size_t bytesRead = fread(&data[0], 1, fileSize, file);
-            fclose(file);
-            
-            if (bytesRead != (size_t)fileSize) {
+            data.resize(static_cast<size_t>(fileSize));
+
+            size_t bytesRead = SDL_RWread(file, &data[0], 1, static_cast<size_t>(fileSize));
+            SDL_RWclose(file);
+
+            if (bytesRead != static_cast<size_t>(fileSize)) {
                 throw std::runtime_error("Failed to read complete file!");
             }
-            
+
             return data;
         }
-        /*
-            Compresses a string using zlib.
 
-            @param str The string to compress
-            @param compressionLevel Pass in a Z_XXX compression level.
-        */
-        std::string CompressString(const std::string& str, int compressionLevel = Z_BEST_COMPRESSION) {
-            z_stream zs{};
-            if (deflateInit(&zs, compressionLevel) != Z_OK)
-                throw std::runtime_error("deflateInit failed");
-
-            zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
-            zs.avail_in = str.size();
-
-            int ret;
-            char outbuffer[32768];
-            std::string outstring;
-
-            // compress in chunks
-            do {
-                zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
-                zs.avail_out = sizeof(outbuffer);
-
-                ret = deflate(&zs, Z_FINISH);
-
-                if (outstring.size() < zs.total_out)
-                    outstring.append(outbuffer, zs.total_out - outstring.size());
-            } while (ret == Z_OK);
-
-            deflateEnd(&zs);
-
-            if (ret != Z_STREAM_END)
-                throw std::runtime_error("Compression failed: " + std::to_string(ret));
-
-            return outstring;
-        }
-
-        /*
-            Decompresses a string.
-            @param string The string to decompress.
-        */
-        std::string DecompressString(const std::string& str) {
-            z_stream zs{};
-            if (inflateInit(&zs) != Z_OK)
-                throw std::runtime_error("inflateInit failed");
-
-            zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
-            zs.avail_in = str.size();
-
-            int ret;
-            char outbuffer[32768];
-            std::string outstring;
-
-            do {
-                zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
-                zs.avail_out = sizeof(outbuffer);
-
-                ret = inflate(&zs, 0);
-
-                if (outstring.size() < zs.total_out)
-                    outstring.append(outbuffer, zs.total_out - outstring.size());
-            } while (ret == Z_OK);
-
-            inflateEnd(&zs);
-
-            if (ret != Z_STREAM_END)
-                throw std::runtime_error("Decompression failed: " + std::to_string(ret));
-
-            return outstring;
-        }
-        class SaveData {
-            private:
-                std::map<std::string, std::vector<std::pair<std::string, std::any>>> data;
-                enum class SaveTypes {
-                    // Basic primitives
-                    BOOL=5,
-                    STRING=1,
-                    INT=2,
-                    FLOAT=3,
-                    DOUBLE=4,
-                };
-                std::vector<std::string> SplitByBrackets(const std::string& k) {
-                    std::vector<std::string> brackets;
-                    size_t startSpot = std::string::npos;
-
-                    for (size_t i = 0; i < k.size(); ++i) {
-                        if (k[i] == '[')
-                            startSpot = i;
-                        else if (k[i] == ']' && startSpot != std::string::npos) {
-                            size_t len = i - startSpot + 1; // include closing bracket
-                            brackets.emplace_back(k.substr(startSpot, len));
-                            startSpot = std::string::npos;  // reset
-                        }
-                    }
-                    return brackets;
-                }
-
-            public:
-                
-                ///@deprecated This format is pickier & less reliable then just using the modern IniParser. Just use that. This is here purely because I don't feel like removing it.
-                SaveData() {
-
-                }
-
-                /*
-                    Set a value within the save data.
-                    @param category The major catagory to put the data in. Use this for majorly different objects, such as Player and Enemy.
-                    @param key The subkey to put the data in. Use this for properties of an object, like health for player or position for an enemy.
-                    @param value The value of the data. The **only types** supported as of now are bools, std::string, ints, floats, and doubles. Passing in other values may cause it to fail to save.
-                */
-                template <typename T>
-                void set(const std::string& category, const std::string& key, const T& value) {
-                    auto& entries = data[category];
-                    for (auto& [k, v] : entries) {
-                        if (k == key) {
-                            v = CPPN::Utils::to_string(value);
-                            return;
-                        }
-                    }
-                    entries.emplace_back(key, value);
-                }
-
-
-                /*
-                    Gets data from the save. You must perform an explicit cast to get the correct type of data back. (So use <int> if your data was saved as an int)
-                    @param category The data's catagory.
-                    @param key The data's subkey.
-                    @param defaultValue Used if you want to set a default value, in case that key does not exist.
-                */
-                template <typename T>
-                T get(const std::string& category, const std::string& key, const T& defaultValue = T{}) const {
-                    auto it = data.find(category);
-                    if (it == data.end()) return defaultValue;
-
-                    for (const auto& [k, v] : it->second) {
-                        if (k == key) {
-                            if (v.type() == typeid(T))
-                                return std::any_cast<T>(v);
-                            else
-                                throw std::bad_any_cast();
-                        }
-                    }
-                    return defaultValue;
-                }
-
-
-                void load(std::string save) {
-
-                    //checking if the save file is compressed or corrupted
-                    if (save.substr(0,8) != "[CPPNSD]") {
-                        save=DecompressString(save);
-                        if (save.substr(0,7) != "[CPPNSD]") { //100% corrupted or invalid
-                            throw std::runtime_error("Unable to load save, are you sure it's valid?");
-                        }
-                    }
-                    std::vector<std::string> brack = SplitByBrackets(save);
-                    std::string currentCatagory;
-                    std::string currentKey;
-                    int type;
-                    int size;
-                    std::string slice;
-                    for (auto &k : brack) {
-                        if (k[1] == '!') {
-                            //catagory
-                            currentCatagory = k.substr(2,k.size()-3);
-                            
-                        }else if (k[1] == '@') {
-                            currentKey= k.substr(2,k.size()-3);
-                        }else if (k[1] == '%') {
-                            type = std::stoi(k.substr(2, 1));
-                            if (data.find(currentCatagory) == data.end()) {
-                                data[currentCatagory] = {};
-                            }
-                            //[%20000000250]
-                           // std::cout << k << std::endl;
-                            size = std::stoi(k.substr(3, 8));
-                            slice = k.substr(11, size) ;
-                            switch (type){
-                                case static_cast<int>(SaveTypes::STRING):
-                                    data[currentCatagory].emplace_back(currentKey, std::any(slice));
-                                    break;
-                                case static_cast<int>(SaveTypes::BOOL):
-                                    data[currentCatagory].emplace_back(currentKey, std::any((slice == "1") ? true : false));
-                                    break;
-                                case static_cast<int>(SaveTypes::INT):
-                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stoi(slice)));
-                                    break;
-                                case static_cast<int>(SaveTypes::DOUBLE):
-                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stod(slice)));
-                                    break;
-                                case static_cast<int>(SaveTypes::FLOAT):
-                                    data[currentCatagory].emplace_back(currentKey, std::any(std::stof(slice)));
-                                    break;
-
-                            }
-                        }
-                    }
-                }
-                /*
-                    Saves the data and returns a string. 
-
-                    @param compress By default true but will perfrom strong zlib compression.
-                    @note WriteSaveFile() is recommended over this and manual saving. 
-                */
-                std::string save(bool compress=false) {
-                    std::string dt;
-                    dt.append(fmt::format("[CPPNSD]"));
-                    for (const auto& m : data) {
-                        //this will be a key and a vector 
-                        dt.append(fmt::format("[!{}]", m.first));
-                       for (const auto& obj : m.second) {
-                            dt.append(fmt::format("[@{}]", obj.first));
-
-                            if (obj.second.type() == typeid(bool)) {
-                                bool val = std::any_cast<bool>(obj.second);
-                                std::string strVal = val ? "1" : "0";
-                                dt.append(fmt::format("[%{}{:08}{}]",
-                                    static_cast<int>(SaveTypes::BOOL),
-                                    strVal.size(),
-                                    strVal));
-                            }
-                            else if (obj.second.type() == typeid(std::string)) {
-                                std::string val = std::any_cast<std::string>(obj.second);
-                                dt.append(fmt::format("[%{}{:08}{}]",
-                                    static_cast<int>(SaveTypes::STRING),
-                                    val.size(),
-                                    val));
-                            }
-                            else if (obj.second.type() == typeid(int)) {
-                                std::string val = fmt::format("{}", std::any_cast<int>(obj.second));
-                                dt.append(fmt::format("[%{}{:08}{}]",
-                                    static_cast<int>(SaveTypes::INT),
-                                    val.size(),
-                                    val));
-                            }
-                            else if (obj.second.type() == typeid(float)) {
-                                std::string val = fmt::format("{:.6f}", std::any_cast<float>(obj.second));
-                                dt.append(fmt::format("[%{}{:08}{}]",
-                                    static_cast<int>(SaveTypes::FLOAT),
-                                    val.size(),
-                                    val));
-                            }
-                            else if (obj.second.type() == typeid(double)) {
-                                std::string val = fmt::format("{:.6f}", std::any_cast<double>(obj.second));
-                                dt.append(fmt::format("[%{}{:08}{}]",
-                                    static_cast<int>(SaveTypes::DOUBLE),
-                                    val.size(),
-                                    val));
-                            }
-                            else {
-                                dt.append(fmt::format("[%??{:08}UNKNOWN({})]",
-                                    0, obj.second.type().name()));
-                            }
-                        }
-
-
-                    }
-                    if (compress) {
-                        return CompressString(dt);
-                    }
-                    return dt;
-                }
-
-
-        };
-        
         /*
             Writes text to a file, located at path.
             @param path If not absolute, will save to the SAVE_PATH.
         */
-        void WriteFile(std::string path, std::string text) {
+        void WriteFile(std::string path, const std::string& text) {
             if (!IsAbsolutePath(path)) {
-                path=AbsoluteSavesPath(path);
+                path = AbsoluteSavesPath(path);
             }
-            FILE *file = fopen(path.c_str(), "w");
-            fprintf(file, "%s", text.c_str());
-            fclose(file);
-            return;
-        }
 
-        /*
-            The preferred way to save a save file.
-            @param path The file to save to. This will be converted to absolute and saved to SAVE_PATH if another absolute path is not provided.
-        */
-        void WriteSaveFile(std::string path, SaveData &save) {
-            WriteFile(path, save.save().c_str());
-            return;
-        }
-
-        /*
-            This is the way to load a save file.
-
-            @param path The path to read the save from. Will be converted to absolute based on SAVE_PATH if an absolute path is not provided.
-            @return SaveData ready for you to use. You can use .save on this if you want to load it into your own SaveData object.
-        */
-        SaveData OpenSaveFile(std::string path) {
-            if (!FileExists(path)) {
-                throw std::runtime_error("File not found");
+            SDL_RWops* file = SDL_RWFromFile(path.c_str(), "w");
+            if (!file) {
+                throw std::runtime_error("Unable to open file for writing: " + path);
             }
-            if (!IsAbsolutePath(path)) {
-                path=AbsoluteSavesPath(path);
+
+            size_t written = SDL_RWwrite(file, text.c_str(), 1, text.size());
+            SDL_RWclose(file);
+
+            if (written != text.size()) {
+                throw std::runtime_error("Failed to write complete file: " + path);
             }
-            SaveData save;
-            save.load(OpenFileAsText(path));
-            return save;
         }
-
-        
-
     }
 }

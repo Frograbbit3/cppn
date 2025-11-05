@@ -42,9 +42,7 @@ int main() {
     Core::AssignMacro(Event::ON_READY, [&example, &save, &m]() {
         example.load();
         if (!example.exists("Rect1", "PositionX")) {
-            std::string name;
-            std::cout << "What's your name? ";
-            std::cin >> name;
+            std::string name = "moak";
             example.set("General", "Name", name);
             std::cout << "loaded defaults" << std::endl;
             example.set("Rect1", "PositionX", 0);
