@@ -17,8 +17,5 @@ int main() {
     test.play();
     test2.play();
 
-    Core::AssignMacro(CPPN::Enums::Event::ON_TICK, []() {
-        Audio::Tick();
-    });
     Core::Run();
 }

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>
-#define BUFFER 2048
+#define BUFFER 4096
 #define DR_FLAC_IMPLEMENTATION
 #define DR_MP3_IMPLEMENTATION
 #define DR_WAV_IMPLEMENTATION
@@ -44,18 +44,6 @@ namespace CPPN::Audio {
     // =====================================
     // ⚙️ Audio Core Functions
     // =====================================
-    inline void Init() {
-        SDL_zero(spec);
-        spec.freq = 48000;
-        spec.format = AUDIO_F32;
-        spec.channels = 2;
-        spec.samples = BUFFER;
-
-        device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);
-        if (!device)
-        {printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());}
-        SDL_PauseAudioDevice(device, 0);
-    }
 
     inline void RegisterSound(Sound* sound) {
         if (std::find(sounds.begin(), sounds.end(), sound) != sounds.end())
@@ -73,7 +61,6 @@ namespace CPPN::Audio {
     private:
         Path path;
         bool loaded = false;
-        int frame = 0;
         int totalFrames = 0;
 
         DecodedAudio LoadAudio() {
@@ -131,7 +118,7 @@ namespace CPPN::Audio {
         bool playing = false;
         float percent = 0.0f;
         DecodedAudio audio;
-
+        int frame = 0;
         void play() {
             RegisterSound(this);
             playing = true;
@@ -149,26 +136,49 @@ namespace CPPN::Audio {
             return 0.0f;
         }
     };
-    inline void Tick() {
-        if (!device) return;
 
-        float buffer[BUFFER] = {0.0f};
-        float temp[BUFFER];
+    void AudioCallback(void* userdata, Uint8* stream, int len) {
+        float* out = reinterpret_cast<float*>(stream);
+        int totalSamples = len / sizeof(float);
+        int channels = 2;  // SDL spec.channels (you can store this globally)
 
-        // 1️⃣ Sum all playing sounds
-        for (auto& m : sounds) {
-            if (!m->playing) continue;
-            m->tick(temp);
-            for (int i = 0; i < BUFFER; ++i)
-                buffer[i] += temp[i];
+        std::fill(out, out + totalSamples, 0.0f);
+
+        for (auto& s : CPPN::Audio::sounds) {
+            if (!s->playing) continue;
+
+            int framesToMix = totalSamples / channels;
+            for (int f = 0; f < framesToMix && s->frame < s->audio.frameCount; ++f, ++s->frame) {
+                for (int c = 0; c < channels; ++c) {
+                    int outIndex = f * channels + c;
+                    int inIndex  = s->frame * s->audio.channels + c;
+                    if (c < s->audio.channels)  // handle mono->stereo
+                        out[outIndex] += s->audio.samples[inIndex];
+                }
+            }
+
+            if (s->frame >= s->audio.frameCount)
+                s->playing = false;
         }
 
-        // 2️⃣ Soft-clip (gentle limiter)
-        for (int i = 0; i < BUFFER; ++i)
-            buffer[i] = buffer[i] / (1.0f + fabsf(buffer[i]));
+        // Soft limiter
+        for (int i = 0; i < totalSamples; ++i)
+            out[i] = tanhf(out[i]);
+    }
 
-        // 3️⃣ Send to SDL
-        SDL_QueueAudio(device, buffer, BUFFER * sizeof(float));
+
+    inline void Init() {
+        SDL_zero(spec);
+        spec.freq = 48000;
+        spec.format = AUDIO_F32;
+        spec.channels = 2;
+        spec.samples = BUFFER;
+        spec.callback= AudioCallback;
+
+        device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);
+        if (!device)
+        {printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());}
+        SDL_PauseAudioDevice(device, 0);
     }
 
 
