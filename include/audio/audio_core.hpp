@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_events.h>
+#include <cstdint>
 #include <vector>
 #include <algorithm>
 #include <cstring>
@@ -14,172 +15,154 @@
 #include "dr_flac.h"
 #include "dr_mp3.h"
 #include "dr_wav.h"
-
 #include "filesystem/filesystem_path.hpp"
 using namespace CPPN::FileSystem;
 
 namespace CPPN::Audio {
 
-    // =====================================
-    // 🔊 Decoded Audio Data Struct
-    // =====================================
-    struct DecodedAudio {
-        float* samples = nullptr;
-        uint64_t frameCount = 0;
-        int channels = 0;
-        int sampleRate = 0;
-    };
+struct DecodedAudio {
+    float* samples = nullptr;
+    uint64_t frameCount = 0;
+    int channels = 0;
+    int sampleRate = 0;
+};
 
-    // Forward declaration for class Sound so globals can reference it
-    class Sound;
+class Sound;
 
-    // =====================================
-    // 🎚️ Global Audio State
-    // =====================================
-    inline std::vector<Sound*> sounds;
-    inline int MAX_SOUNDS = 10;
-    inline SDL_AudioSpec spec{};
-    SDL_AudioDeviceID device;
+inline std::vector<Sound*> sounds;
+inline int MAX_SOUNDS = 10;
+inline SDL_AudioSpec spec{};
+inline SDL_AudioDeviceID device;
 
-    // =====================================
-    // ⚙️ Audio Core Functions
-    // =====================================
+inline void RegisterSound(Sound* sound) {
+    if (std::find(sounds.begin(), sounds.end(), sound) != sounds.end())
+        return;
+    sounds.emplace_back(sound);
+    if (sounds.size() > MAX_SOUNDS)
+        sounds.erase(sounds.begin());
+}
 
-    inline void RegisterSound(Sound* sound) {
-        if (std::find(sounds.begin(), sounds.end(), sound) != sounds.end())
-            return;
+enum class DecoderType { None, FLAC, MP3, WAV };
 
-        sounds.emplace_back(sound);
-        if (sounds.size() > MAX_SOUNDS)
-            sounds.erase(sounds.begin());
+struct Decoder {
+    DecoderType type = DecoderType::None;
+    void* handle = nullptr;
+    int channels = 0;
+    int sampleRate = 0;
+
+    bool open(const char* path) {
+        if (strstr(path, ".flac")) {
+            drflac* f = drflac_open_file(path, nullptr);
+            if (!f) return false;
+            handle = f;
+            channels = f->channels;
+            sampleRate = f->sampleRate;
+            type = DecoderType::FLAC;
+        } else if (strstr(path, ".mp3")) {
+            drmp3* m = (drmp3*)malloc(sizeof(drmp3));
+            if (!drmp3_init_file(m, path, nullptr)) { free(m); return false; }
+            handle = m;
+            channels = m->channels;
+            sampleRate = m->sampleRate;
+            type = DecoderType::MP3;
+        } else if (strstr(path, ".wav")) {
+            drwav* w = (drwav*)malloc(sizeof(drwav));
+            if (!drwav_init_file(w, path, nullptr)) { free(w); return false; }
+            handle = w;
+            channels = w->channels;
+            sampleRate = w->sampleRate;
+            type = DecoderType::WAV;
+        } else {
+            return false;
+        }
+        return true;
     }
 
-    // =====================================
-    // 🎵 Sound Class
-    // =====================================
-    class Sound {
-    private:
-        Path path;
-        bool loaded = false;
-        int totalFrames = 0;
-
-        DecodedAudio LoadAudio() {
-            if (!path.exists)
-                throw std::runtime_error("File not found");
-
-            const char* filename = path.value.c_str();
-            DecodedAudio audio{};
-
-            if (strstr(filename, ".flac")) {
-                drflac* flac = drflac_open_file(filename, NULL);
-                if (flac) {
-                    audio.frameCount = flac->totalPCMFrameCount;
-                    audio.channels = flac->channels;
-                    audio.sampleRate = flac->sampleRate;
-                    audio.samples = static_cast<float*>(
-                        malloc(audio.frameCount * audio.channels * sizeof(float)));
-                    drflac_read_pcm_frames_f32(flac, audio.frameCount, audio.samples);
-                    drflac_close(flac);
-                }
-            } else if (strstr(filename, ".mp3")) {
-                drmp3 mp3;
-                if (drmp3_init_file(&mp3, filename, NULL)) {
-                    drmp3_uint64 frameCount = drmp3_get_pcm_frame_count(&mp3);
-                    audio.frameCount = frameCount;
-                    audio.channels = mp3.channels;
-                    audio.sampleRate = mp3.sampleRate;
-                    audio.samples = static_cast<float*>(
-                        malloc(frameCount * audio.channels * sizeof(float)));
-                    drmp3_read_pcm_frames_f32(&mp3, frameCount, audio.samples);
-                    drmp3_uninit(&mp3);
-                }
-            } else if (strstr(filename, ".wav")) {
-                drwav wav;
-                if (drwav_init_file(&wav, filename, NULL)) {
-                    audio.frameCount = wav.totalPCMFrameCount;
-                    audio.channels = wav.channels;
-                    audio.sampleRate = wav.sampleRate;
-                    audio.samples = static_cast<float*>(
-                        malloc(audio.frameCount * audio.channels * sizeof(float)));
-                    drwav_read_pcm_frames_f32(&wav, audio.frameCount, audio.samples);
-                    drwav_uninit(&wav);
-                }
-            }
-
-            return audio;
+    uint64_t read(float* buffer, uint64_t framesToRead) {
+        if (!handle) return 0;
+        switch (type) {
+            case DecoderType::FLAC: return drflac_read_pcm_frames_f32((drflac*)handle, framesToRead, buffer);
+            case DecoderType::MP3:  return drmp3_read_pcm_frames_f32((drmp3*)handle, framesToRead, buffer);
+            case DecoderType::WAV:  return drwav_read_pcm_frames_f32((drwav*)handle, framesToRead, buffer);
+            default: return 0;
         }
-        
-
-    public:
-        explicit Sound(const std::string& pth) : path(pth) {
-            audio = LoadAudio();
-        }
-
-        bool playing = false;
-        float percent = 0.0f;
-        DecodedAudio audio;
-        int frame = 0;
-        void play() {
-            RegisterSound(this);
-            playing = true;
-            totalFrames = static_cast<int>(audio.frameCount);
-        }
-
-        float tick(float* smp) {
-            if (!playing) return 0.0f;
-            if (frame >= totalFrames / BUFFER) {
-                playing = false;
-                return 0.0f;
-            }
-            memcpy(smp, audio.samples + (BUFFER * frame), BUFFER * sizeof(float));
-            frame++;
-            return 0.0f;
-        }
-    };
-
-    void AudioCallback(void* userdata, Uint8* stream, int len) {
-        float* out = reinterpret_cast<float*>(stream);
-        int totalSamples = len / sizeof(float);
-        int channels = 2;  // SDL spec.channels (you can store this globally)
-
-        std::fill(out, out + totalSamples, 0.0f);
-
-        for (auto& s : CPPN::Audio::sounds) {
-            if (!s->playing) continue;
-
-            int framesToMix = totalSamples / channels;
-            for (int f = 0; f < framesToMix && s->frame < s->audio.frameCount; ++f, ++s->frame) {
-                for (int c = 0; c < channels; ++c) {
-                    int outIndex = f * channels + c;
-                    int inIndex  = s->frame * s->audio.channels + c;
-                    if (c < s->audio.channels)  // handle mono->stereo
-                        out[outIndex] += s->audio.samples[inIndex];
-                }
-            }
-
-            if (s->frame >= s->audio.frameCount)
-                s->playing = false;
-        }
-
-        // Soft limiter
-        for (int i = 0; i < totalSamples; ++i)
-            out[i] = tanhf(out[i]);
     }
 
-
-    inline void Init() {
-        SDL_zero(spec);
-        spec.freq = 48000;
-        spec.format = AUDIO_F32;
-        spec.channels = 2;
-        spec.samples = BUFFER;
-        spec.callback= AudioCallback;
-
-        device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);
-        if (!device)
-        {printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());}
-        SDL_PauseAudioDevice(device, 0);
+    void close() {
+        if (!handle) return;
+        switch (type) {
+            case DecoderType::FLAC: drflac_close((drflac*)handle); break;
+            case DecoderType::MP3:  drmp3_uninit((drmp3*)handle); free(handle); break;
+            case DecoderType::WAV:  drwav_uninit((drwav*)handle); free(handle); break;
+            default: break;
+        }
+        handle = nullptr;
+        type = DecoderType::None;
     }
+};
 
+class Sound {
+private:
+    Path path;
+    bool loaded = false;
+    int totalFrames = 0;
+
+public:
+    Decoder decoder;
+    float pcmBuffer[BUFFER * 2];
+    explicit Sound(const std::string& pth) : path(pth) {
+        decoder.open(path.value.c_str());
+    }
+    bool playing = false;
+    float percent = 0.0f;
+    DecodedAudio audio;
+    int frame = 0;
+    void play() {
+        RegisterSound(this);
+        playing = true;
+    }
+    void tick(uint32_t frames) {
+        if (!playing) return;
+        uint64_t got = decoder.read(pcmBuffer, frames);
+        if (got < frames) {
+            playing = false;
+            decoder.close();
+        }
+    }
+};
+
+void AudioCallback(void* userdata, Uint8* stream, int len) {
+    float* out = reinterpret_cast<float*>(stream);
+    int totalSamples = len / sizeof(float);
+    int channels = 2;
+    std::fill(out, out + totalSamples, 0.0f);
+    for (auto& s : CPPN::Audio::sounds) {
+        if (!s->playing) continue;
+        int framesToMix = totalSamples / channels;
+        s->tick(framesToMix);
+        for (int f = 0; f < framesToMix; ++f) {
+            for (int c = 0; c < channels; ++c) {
+                int outIndex = f * channels + c;
+                if (c < s->decoder.channels)
+                    out[outIndex] += s->pcmBuffer[f * s->decoder.channels + c];
+            }
+        }
+    }
+    for (int i = 0; i < totalSamples; ++i)
+        out[i] = tanhf(out[i]);
+}
+
+inline void Init() {
+    SDL_zero(spec);
+    spec.freq = 48000;
+    spec.format = AUDIO_F32;
+    spec.channels = 2;
+    spec.samples = BUFFER;
+    spec.callback = AudioCallback;
+    device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, 0);
+    if (!device)
+        printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());
+    SDL_PauseAudioDevice(device, 0);
+}
 
 }
