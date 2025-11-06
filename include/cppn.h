@@ -4,7 +4,6 @@
 #define FMT_HEADER_ONLY
 
 //config
-
 #include "utils/utils.h"
 #include "core/core.hpp"
 #include "graphics/graphics_utils.hpp"

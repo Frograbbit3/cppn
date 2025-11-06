@@ -1,36 +1,37 @@
-#include "core/core.hpp"
-#include "core/macros.hpp"
+#define NO_AUTO_CACHE
 #include "cppn.h"
-#include "audio/audio_core.hpp"
-#include "enums/enums.hpp"
-#include "filesystem/filesystem_core.hpp"
-#include "shapedesigner/defines.hpp"
 
 
 using namespace CPPN;
 
 int main() {
-    Core::Init(8000, 8000, "example");
+    Core::Init(400, 400, "example");
     FileSystem::Init("example", "example");
     Audio::Init();
-    Audio::Sound jump("jump.mp3");
-    Graphics::background = {135, 206, 235,255};
-    int vY = 0;
-    Shape bird;
-    bird.fillColor = {255,255,0,255};
-    bird.size = {50, 50};
-    bird.position = {100, 400};
-    bird.shape = ShapeTypes::OVAL;
-    bird.cache();
-    Core::AssignMacro(Event::ON_KEY_PRESS, [&jump, &vY]() {
-        jump.play();
-        vY = -17;
+
+    Shape path;
+    path.fillColor =  {0,0,0,255};
+    Vector2 base {0,0};
+    path.points = {base};
+    path.size = {400, 400};
+    path.shape = ShapeTypes::POLYGON;
+
+    Core::AssignMacro(Event::ON_MOUSE_RELEASE, [&path](){
+        Vector2 v({Input::mouseX,Input::mouseY});
+        std::cout << fmt::format("({},{})", Input::mouseX, Input::mouseY) <<std::endl;
+        path.points.emplace_back(v); // Default-construct Vector2
     });
 
-    Core::AssignMacro(Event::ON_TICK,[&bird, &vY]() {
-        bird.position.y+=vY;
-        vY += 1;
+    Core::AssignMacro(Event::ON_MOUSE_MOVE, [&path]() {
+        path.points[path.points.size()-1].x = Input::mouseX;
+        path.points[path.points.size()-1].y = Input::mouseY;
     });
-
+    Core::AssignMacro(Event::ON_KEY_PRESS, [&path](){
+        if (Input::keysPressed.find("Z") != Input::keysPressed.end()) {
+            if (!path.points.empty()) {
+                path.points.erase(path.points.end() - 1);
+            }
+        }
+    });
     Core::Run();
 }
