@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "SDL2/SDL.h"
+#include "backend/backend.h"
 namespace CPPN {
     namespace Graphics {
         struct Color {

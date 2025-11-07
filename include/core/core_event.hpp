@@ -1,5 +1,5 @@
 #pragma once
-#include "SDL2/SDL.h"
+#include "backend/backend.h"
 #include "core.hpp"
 namespace CPPN {
     namespace Private {
