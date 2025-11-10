@@ -136,7 +136,7 @@ namespace CPPN {
 
                 // draw full texture (srcrect=nullptr) at cached destination rect
                 // Compose simple parent->child transforms for rotation around parent center if a parent exists.
-                SDL_Rect dst = *shape->cached_rect; // start from cached absolute rect (translation applied in cache)
+                Rect dst = *shape->cached_rect; // start from cached absolute rect (translation applied in cache)
 
                 double angle = static_cast<double>(shape->transforms.rotation);
                 if (shape->parent) {

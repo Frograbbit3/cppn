@@ -84,8 +84,8 @@ namespace CPPN {
             bool draggable = false;
             std::string value=""; //currently used for labels
 
-            SDL_Texture* cached = nullptr; // used internally for rendering
-            SDL_Rect* cached_rect = nullptr; //used internally for rendering
+            Texture* cached = nullptr; // used internally for rendering
+            Rect* cached_rect = nullptr; //used internally for rendering
             // Auto-register on construction; auto-deregister on destruction
             Shape() {
                 CPPN::Graphics::AddShape(this);
